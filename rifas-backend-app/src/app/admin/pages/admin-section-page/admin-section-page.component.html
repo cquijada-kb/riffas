@@ -1,0 +1,409 @@
+<ng-container *ngIf="sectionKey === 'usuarios'; else otherSections">
+  <section class="users-page">
+    <div class="users-header">
+      <div>
+        <h2>Directorio de Usuarios</h2>
+        <p>Gestiona los participantes y el acceso al sistema de sorteos.</p>
+      </div>
+      <div class="users-total">
+        <span>Total Usuarios</span>
+        <strong>{{ usersTotalLabel }}</strong>
+      </div>
+    </div>
+
+    <section class="user-stats">
+      <article class="user-stat-card" *ngFor="let stat of userStats" [class]="stat.tone">
+        <span>{{ stat.label }}</span>
+        <div>
+          <strong>{{ stat.value }}</strong>
+          <small>{{ stat.badge }}</small>
+        </div>
+      </article>
+    </section>
+
+    <section class="users-table-card">
+      <div class="users-toolbar">
+        <div class="toolbar-actions">
+          <button type="button" [class.active]="selectedUserView === 'sistema'" (click)="setUserView('sistema')">
+            <span class="material-symbols-outlined">admin_panel_settings</span>
+            Sistema
+          </button>
+          <button type="button" [class.active]="selectedUserView === 'compradores'" (click)="setUserView('compradores')">
+            <span class="material-symbols-outlined">confirmation_number</span>
+            Compradores
+          </button>
+          <button type="button" [class.active]="selectedUserView === 'ganadores'" (click)="setUserView('ganadores')">
+            <span class="material-symbols-outlined">workspace_premium</span>
+            Ganadores
+          </button>
+        </div>
+        <span>Mostrando {{ getUserViewCount() }} registros</span>
+      </div>
+
+      <div class="table-wrap" *ngIf="selectedUserView === 'sistema'">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Contacto</th>
+              <th>Estado</th>
+              <th>Rol</th>
+              <th>Ultima actividad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of systemUsers">
+              <td>
+                <div class="user-cell">
+                  <div class="avatar"></div>
+                  <div>
+                    <strong>{{ user.nombre }}</strong>
+                    <span>ID: {{ user.id.slice(-8).toUpperCase() }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <strong>{{ user.email }}</strong>
+                <span>Registro: {{ formatDate(user.createdAt) }}</span>
+              </td>
+              <td>
+                <span class="pill" [class]="getStatusClass(user.estado)">{{ user.estado }}</span>
+              </td>
+              <td>
+                <strong>{{ getSystemUserRoleLabel(user.rol) }}</strong>
+              </td>
+              <td>
+                <strong>{{ getRelativeLabel(user.updatedAt) }}</strong>
+                <span>{{ user.rol === 'ADMIN' ? 'Acceso al panel' : 'Cuenta cliente' }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" *ngIf="selectedUserView === 'compradores'">
+        <table>
+          <thead>
+            <tr>
+              <th>Comprador</th>
+              <th>Tickets</th>
+              <th>Monto total</th>
+              <th>Estado</th>
+              <th>Ultima compra</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let buyer of buyers">
+              <td>
+                <div class="user-cell">
+                  <div class="avatar"></div>
+                  <div>
+                    <strong>{{ buyer.nombre }}</strong>
+                    <span>{{ buyer.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="tickets-cell">
+                  <strong>{{ formatCount(buyer.ticketsComprados) }}</strong>
+                  <span>{{ formatCount(buyer.rifasParticipadas) }} rifas</span>
+                </div>
+              </td>
+              <td><strong>{{ formatCurrency(buyer.montoTotal) }}</strong></td>
+              <td>
+                <span class="pill" [class]="getStatusClass(buyer.estado)">{{ buyer.estado }}</span>
+              </td>
+              <td>
+                <strong>{{ getRelativeLabel(buyer.updatedAt) }}</strong>
+                <span>{{ formatDate(buyer.updatedAt) }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" *ngIf="selectedUserView === 'ganadores'">
+        <table>
+          <thead>
+            <tr>
+              <th>Ganador</th>
+              <th>Sorteo</th>
+              <th>Numero ganador</th>
+              <th>Fecha</th>
+              <th>Verificacion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let winner of winners">
+              <td>
+                <div class="user-cell">
+                  <div class="avatar"></div>
+                  <div>
+                    <strong>{{ winner.nombre }}</strong>
+                    <span>{{ winner.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <strong>{{ winner.raffleTitulo }}</strong>
+                <span>ID: {{ winner.raffleId.slice(-8).toUpperCase() }}</span>
+              </td>
+              <td>
+                <div class="tickets-cell">
+                  <strong>#{{ winner.numero }}</strong>
+                  <span>Ticket ganador</span>
+                </div>
+              </td>
+              <td>
+                <strong>{{ getWinnerDateLabel(winner.fechaSorteo) }}</strong>
+                <span>{{ getRelativeLabel(winner.fechaSorteo) }}</span>
+              </td>
+              <td>
+                <strong>{{ winner.codigoVerificacion || 'Sin codigo' }}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="users-pagination">
+        <button type="button">Anterior</button>
+        <div class="pages">
+          <span class="active">1</span>
+          <span *ngIf="selectedUserView === 'sistema' && systemUsers.length > 10">2</span>
+          <span *ngIf="selectedUserView === 'compradores' && buyers.length > 10">2</span>
+          <span *ngIf="selectedUserView === 'ganadores' && winners.length > 10">2</span>
+        </div>
+        <button type="button">Siguiente</button>
+      </div>
+    </section>
+
+    <section class="users-footer">
+      <div class="sync-chip">
+        <span class="dot"></span>
+        <span>Sincronizado en tiempo real</span>
+      </div>
+      <p>Ultima actualizacion: 12:42 PM - 24 Oct 2023</p>
+    </section>
+  </section>
+</ng-container>
+
+<ng-template #otherSections>
+  <ng-container *ngIf="sectionKey === 'pagos'; else trazabilidadView">
+    <section class="payments-page">
+      <div class="payments-header">
+        <h2>Gestion de Pagos</h2>
+        <p>Supervise la integridad financiera de los sorteos globales y liquidaciones.</p>
+      </div>
+
+      <section class="payment-summary">
+        <article class="payment-card" *ngFor="let item of paymentSummary" [class]="item.tone">
+          <p>{{ item.label }}</p>
+          <div class="value-row">
+            <strong>{{ item.value }}</strong>
+            <span *ngIf="item.badge">{{ item.badge }}</span>
+          </div>
+          <small *ngIf="item.detail">{{ item.detail }}</small>
+        </article>
+      </section>
+
+      <section class="payments-table-card">
+        <div class="payments-toolbar">
+          <h3>Historial de Transacciones</h3>
+        <div class="payments-filters">
+          <div class="filter-pills">
+            <button type="button" [class.active]="selectedPaymentFilter === 'all'" (click)="setPaymentFilter('all')">Todos</button>
+            <button type="button" [class.active]="selectedPaymentFilter === 'success'" (click)="setPaymentFilter('success')">Exito</button>
+            <button type="button" [class.active]="selectedPaymentFilter === 'pending'" (click)="setPaymentFilter('pending')">Pendiente</button>
+          </div>
+          <button type="button" class="icon-button">
+            <span class="material-symbols-outlined">filter_list</span>
+          </button>
+        </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+            <tr>
+              <th>Titular</th>
+              <th>Fecha</th>
+              <th>Monto</th>
+              <th>Metodo</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let payment of paginatedPayments">
+              <td>
+                <div class="payment-user">
+                  <div class="initials">{{ payment.initials }}</div>
+                    <div>
+                      <strong>{{ payment.name }}</strong>
+                      <span>{{ payment.email }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <strong>{{ payment.date }}</strong>
+                  <span>{{ payment.time }}</span>
+                </td>
+                <td><strong>{{ payment.amount }}</strong></td>
+                <td>
+                  <div class="method-cell">
+                    <span class="material-symbols-outlined">{{ payment.icon }}</span>
+                    <span>{{ payment.method }}</span>
+                  </div>
+                  <span>{{ payment.raffleTitle }} · {{ payment.quantity }} tickets</span>
+                </td>
+                <td>
+                  <span class="pill" [class]="getStatusClass(payment.status)">{{ payment.status }}</span>
+                </td>
+              </tr>
+              <tr *ngIf="!paginatedPayments.length">
+                <td colspan="5">
+                  <strong>No hay transacciones para este filtro.</strong>
+                  <span>Ajusta el estado para revisar otros movimientos.</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="payments-pagination">
+          <p>Mostrando {{ getPaymentResultsLabel() }} de {{ paymentsTotalLabel }} resultados</p>
+          <div class="pagination-actions">
+            <button type="button" (click)="previousPaymentPage()" [disabled]="paymentPage === 1">Anterior</button>
+            <button type="button" class="active" (click)="nextPaymentPage()" [disabled]="paymentPage === paymentTotalPages">Siguiente</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="payments-bottom">
+        <article class="report-card">
+          <div>
+            <h4>Informe Semanal Automatizado</h4>
+            <p>
+              Su reporte de conciliacion bancaria para la semana 43 ya esta disponible. Se han detectado 2 anomalias leves que requieren su atencion.
+            </p>
+            <button type="button" (click)="exportPaymentsReport()" [disabled]="!filteredPayments.length">
+              <span class="material-symbols-outlined">analytics</span>
+              Exportar XLS
+            </button>
+          </div>
+          <div class="report-badge">
+            <span class="material-symbols-outlined">verified_user</span>
+            <div>
+              <small>Seguridad Ledger</small>
+              <strong>100% Cifrado</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="notice-card">
+          <h4>Aviso de Sistema</h4>
+          <p>Mantenimiento de pasarela de pago programado para hoy a las 23:00 GMT.</p>
+          <button type="button">Mas detalles</button>
+        </article>
+      </section>
+    </section>
+  </ng-container>
+
+  <ng-template #trazabilidadView>
+    <section class="trace-hero">
+      <div>
+        <h2>Trazabilidad y log</h2>
+        <p>
+          Control total sobre cada accion realizada en el sistema. Integridad de datos y auditoria
+          en tiempo real para la Ledger Soberana.
+        </p>
+      </div>
+      <div class="sync-badge">
+        <span class="material-symbols-outlined">circle</span>
+        <span>{{ getTraceSyncLabel() }}</span>
+      </div>
+    </section>
+
+    <section class="trace-stats">
+      <article class="trace-card" *ngFor="let card of traceStats; let i = index" [class.wide]="i === 2">
+        <p>{{ card.label }}</p>
+        <strong>{{ card.value }}</strong>
+        <span>{{ card.detail }}</span>
+      </article>
+    </section>
+
+    <section class="timeline-card">
+      <div class="timeline-header">
+        <h3>Cronologia de actividad</h3>
+        <div class="timeline-filters">
+          <button
+            type="button"
+            *ngFor="let filter of traceFilters"
+            [class.active]="selectedTraceFilter === filter"
+            (click)="setTraceFilter(filter)"
+          >
+            {{ filter }}
+          </button>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <article class="timeline-entry" *ngFor="let entry of filteredTimelineEntries" [class]="entry.tone">
+          <div class="timeline-icon">
+            <span class="material-symbols-outlined">{{ entry.icon }}</span>
+          </div>
+          <div class="timeline-body">
+            <div class="timeline-top">
+              <h4>{{ entry.title }}</h4>
+              <span>{{ entry.time }}</span>
+            </div>
+            <p>{{ entry.description }}</p>
+
+            <div class="timeline-meta" *ngIf="entry.meta?.length">
+              <span *ngFor="let meta of entry.meta">{{ meta }}</span>
+            </div>
+
+            <div class="timeline-chips" *ngIf="entry.chips?.length">
+              <span *ngFor="let chip of entry.chips">{{ chip }}</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="timeline-actions">
+        <button type="button" (click)="toggleTraceHistory()">{{ getTraceHistoryActionLabel() }}</button>
+      </div>
+    </section>
+
+    <section class="trace-bottom">
+      <article class="users-card">
+        <div class="section-header">
+          <div>
+            <p>Resumen de usuarios activos</p>
+            <h3>Sesiones y permisos</h3>
+          </div>
+        </div>
+
+        <div class="user-row" *ngFor="let user of activeUsers">
+          <div>
+            <strong>{{ user.name }}</strong>
+            <span>{{ user.role }}</span>
+          </div>
+          <span class="user-status" [class.offline]="user.status === 'offline'">
+            {{ user.status === 'online' ? 'En linea' : 'Desconectado' }}
+          </span>
+        </div>
+      </article>
+
+      <article class="forensic-card">
+        <span class="material-symbols-outlined">analytics</span>
+        <div>
+          <h3>{{ forensicReport.title }}</h3>
+          <p>{{ forensicReport.description }}</p>
+          <small>Ultima sincronizacion: {{ getTraceGeneratedAtLabel() }}</small>
+        </div>
+        <button type="button" (click)="refreshTraceability()">{{ forensicReport.actionLabel }}</button>
+      </article>
+    </section>
+  </ng-template>
+</ng-template>

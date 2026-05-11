@@ -1,0 +1,57 @@
+<div class="overlay" *ngIf="open" (click)="close()">
+  <div class="modal card glow" (click)="$event.stopPropagation()">
+    <div class="head">
+      <div>
+        <div class="title">Comprar numeros</div>
+        <div class="sub">{{ raffle.nombre }}</div>
+      </div>
+      <button class="x" type="button" (click)="close()">✕</button>
+    </div>
+
+    <div class="body" [formGroup]="form">
+      <input class="input" placeholder="Tu nombre" formControlName="compradorNombre" />
+      <input class="input" placeholder="Tu correo (para enviarte tus numeros)" formControlName="compradorEmail" />
+
+      <div class="stepper">
+        <button class="step" type="button" (click)="dec()">-</button>
+        <input
+          class="input qty"
+          type="number"
+          formControlName="cantidad"
+          [min]="1"
+          [max]="maxAllowed()"
+          step="1"
+        />
+        <button class="step" type="button" (click)="inc()">+</button>
+      </div>
+
+      <div class="hint">
+        Maximo por persona: <strong>{{ raffle.limiteMaximoPorPersona }}</strong> |
+        Disponibles: <strong>{{ raffle.disponibles }}</strong>
+      </div>
+
+      <div class="summary card">
+        <div class="row">
+          <span>Precio por numero</span>
+          <strong>{{ raffle.precioNumero | currency:'CLP':'symbol-narrow' }}</strong>
+        </div>
+        <div class="row">
+          <span>Cantidad</span>
+          <strong>{{ cantidad.value }}</strong>
+        </div>
+        <div class="row total">
+          <span>Total</span>
+          <strong>{{ total() | currency:'CLP':'symbol-narrow' }}</strong>
+        </div>
+        <div class="note">
+          Los numeros se asignan aleatoriamente despues del pago.
+        </div>
+      </div>
+
+      <button class="btn btn-primary w100" type="button" (click)="purchase()" [disabled]="loading || form.invalid">
+        {{ loading ? 'Redirigiendo a Flow...' : 'Comprar y pagar' }}
+      </button>
+      <button class="btn btn-ghost w100" type="button" (click)="close()">Cancelar</button>
+    </div>
+  </div>
+</div>

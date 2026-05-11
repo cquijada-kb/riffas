@@ -1,0 +1,71 @@
+<div class="wrap">
+  <button class="link" type="button" (click)="volver()">← Volver</button>
+
+  <div class="detail" *ngIf="!loading && raffle">
+
+    <div class="detail__image card glow">
+      <div class="carousel">
+        <img
+          class="carousel__img"
+          [src]="selectedImage || raffle.imageUrl"
+          alt="Premio"
+          loading="lazy"
+        />
+      </div>
+
+      <div class="thumbs" *ngIf="raffle.images?.length && raffle.images.length > 1">
+        <button
+          class="thumb"
+          type="button"
+          *ngFor="let img of raffle.images"
+          (click)="selectImage(img)"
+          [class.active]="img === selectedImage"
+        >
+          <img [src]="img" alt="Miniatura" loading="lazy" />
+        </button>
+      </div>
+    </div>
+
+    <div class="detail__info card">
+      <h2>{{ raffle.nombre }}</h2>
+      <p class="desc">{{ raffle.descripcion }}</p>
+
+      <div class="meta">
+        <div class="meta__row">
+          <span class="label">Precio por numero</span>
+          <span class="value">{{ raffle.precioNumero | currency:'CLP':'symbol-narrow' }}</span>
+        </div>
+        <div class="meta__row">
+          <span class="label">Total numeros</span>
+          <span class="value">{{ raffle.totalNumeros }}</span>
+        </div>
+        <div class="meta__row">
+          <span class="label">Vendidos</span>
+          <span class="value">{{ raffle.vendidos }} ({{ raffle.progressPercent }}%)</span>
+        </div>
+        <div class="meta__row">
+          <span class="label">Maximo por persona</span>
+          <span class="value">{{ raffle.limiteMaximoPorPersona }}</span>
+        </div>
+      </div>
+
+      <div class="progress">
+        <div class="progress__bar">
+          <div class="progress__fill" [style.width.%]="raffle.progressPercent"></div>
+        </div>
+        <div class="progress__hint">
+          Avance: <strong>{{ raffle.progressPercent }}%</strong> · Disponibles: <strong>{{ raffle.disponibles }}</strong>
+        </div>
+      </div>
+
+      <button class="btn btn-primary w100" type="button" (click)="openPurchase()">
+        Comprar numeros
+      </button>
+
+      <div class="note">
+        El comprador solo indica cuantos numeros quiere. El sistema asigna numeros aleatoriamente.
+      </div>
+    </div>
+
+  </div>
+</div>

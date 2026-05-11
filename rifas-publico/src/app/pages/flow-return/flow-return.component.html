@@ -1,0 +1,13 @@
+<div class="return-page">
+  <div class="return-card">
+    <div class="return-pill">Flow</div>
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+
+    <div class="return-loader" *ngIf="loading" aria-hidden="true"></div>
+
+    <button class="return-button" type="button" *ngIf="!loading" (click)="goHome()">
+      Volver al inicio
+    </button>
+  </div>
+</div>

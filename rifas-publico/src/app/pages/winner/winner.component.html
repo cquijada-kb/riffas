@@ -1,0 +1,27 @@
+<div class="container">
+  <div class="wrap card glow" *ngIf="loading">Cargando ganador...</div>
+
+  <div class="wrap card glow" *ngIf="!loading && winner">
+    <div class="top">
+      <span class="badge win">Rifa finalizada</span>
+      <span class="badge">Sorteo: {{ winner.drawAt | date:'short' }}</span>
+    </div>
+
+    <h2 class="title">Ganador</h2>
+
+    <div class="panel card">
+      <div class="label">Numero ganador</div>
+      <div class="big">{{ winner.winnerNumber }}</div>
+
+      <div class="name" *ngIf="winner.winnerName">Ganador: <strong>{{ winner.winnerName }}</strong></div>
+      <div class="raffle">Rifa: <strong>{{ winner.raffleName }}</strong></div>
+      <div class="msg">Esta rifa ha finalizado. Gracias por participar.</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" (click)="goHome()">Volver al inicio</button>
+      <button class="btn btn-ghost" (click)="goRaffle()">Ver rifa</button>
+    </div>
+  </div>
+</div>
+<app-toast></app-toast>

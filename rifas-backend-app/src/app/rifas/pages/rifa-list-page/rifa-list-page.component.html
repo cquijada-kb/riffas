@@ -1,0 +1,167 @@
+<section class="page-header">
+  <div>
+    <h2>Gestion de sorteos</h2>
+    <p>Control central de participaciones y liquidacion de premios.</p>
+  </div>
+
+  <div class="view-switch">
+    <button type="button" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')">Vista de red</button>
+    <button type="button" [class.active]="viewMode === 'compact'" (click)="setViewMode('compact')">Vista compacta</button>
+  </div>
+</section>
+
+<section class="stats-grid">
+  <article class="stat-card" *ngFor="let stat of stats">
+    <div class="stat-head">
+      <span>{{ stat.label }}</span>
+      <span class="material-symbols-outlined" [class]="stat.tone">{{ stat.icon }}</span>
+    </div>
+    <strong>{{ stat.value }}</strong>
+  </article>
+</section>
+
+<section class="filters-bar">
+  <button
+    type="button"
+    *ngFor="let filter of filters"
+    [class.active]="selectedFilter === filter"
+    (click)="setFilter(filter)"
+  >
+    <span class="material-symbols-outlined" *ngIf="filter === 'Todos los estados'">filter_list</span>
+    {{ filter }}
+  </button>
+
+  <div class="sort-box">
+    <span>Ordenar por:</span>
+    <button type="button" [matMenuTriggerFor]="sortMenu" class="sort-trigger">
+      <strong>{{ getSelectedSortLabel() }}</strong>
+      <span class="material-symbols-outlined">expand_more</span>
+    </button>
+    <mat-menu #sortMenu="matMenu">
+      <button mat-menu-item *ngFor="let option of sortOptions" (click)="setSort(option.value)">
+        {{ option.label }}
+      </button>
+    </mat-menu>
+  </div>
+</section>
+
+<section class="cards-grid" [class.compact]="viewMode === 'compact'" *ngIf="!loading; else loadingState">
+  <article class="raffle-card" *ngFor="let r of filteredRifas" [class]="getCardTone(r)">
+    <div class="cover">
+      <img
+        *ngIf="getPrimaryImage(r) as imageUrl"
+        class="cover-image"
+        [src]="imageUrl"
+        [alt]="r.titulo"
+      />
+      <div class="cover-badge-row">
+        <span class="status-badge">{{ getStatusLabel(r) }}</span>
+        <span class="vip-badge" *ngIf="r.estado === 'ABIERTA'">VIP</span>
+      </div>
+
+      <span class="cover-icon material-symbols-outlined">
+        {{ r.estado === 'FINALIZADA' ? 'verified_user' : r.estado === 'CERRADA' ? 'image' : 'confirmation_number' }}
+      </span>
+    </div>
+
+    <div class="card-body">
+      <div class="card-top">
+        <div>
+          <h3>{{ r.titulo }}</h3>
+          <p>{{ r.descripcionPremio }}</p>
+        </div>
+
+        <button type="button" class="icon-action" [matMenuTriggerFor]="actionsMenu">
+          <span class="material-symbols-outlined">more_vert</span>
+        </button>
+        <mat-menu #actionsMenu="matMenu">
+          <button mat-menu-item (click)="verDetalle(r)">
+            <span class="material-symbols-outlined">visibility</span>
+            <span>Ver detalle</span>
+          </button>
+          <button mat-menu-item *ngIf="canEdit(r)" (click)="editarRifa(r)">
+            <span class="material-symbols-outlined">edit</span>
+            <span>Editar</span>
+          </button>
+          <button mat-menu-item *ngIf="canClose(r)" (click)="cerrarRifa(r)">
+            <span class="material-symbols-outlined">lock</span>
+            <span>Cerrar sorteo</span>
+          </button>
+          <button mat-menu-item *ngIf="canDraw(r)" (click)="ejecutarSorteo(r)">
+            <span class="material-symbols-outlined">casino</span>
+            <span>Ejecutar sorteo</span>
+          </button>
+          <button mat-menu-item *ngIf="canReopen(r)" (click)="reabrirRifa(r)">
+            <span class="material-symbols-outlined">lock_open</span>
+            <span>Reabrir sorteo</span>
+          </button>
+        </mat-menu>
+      </div>
+
+      <div class="progress-block">
+        <div class="progress-meta">
+          <span>Progreso de venta</span>
+          <strong>{{ getPorcentaje(r) }}%</strong>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="getPorcentaje(r)"></div>
+        </div>
+
+        <div class="progress-foot">
+          <span>{{ r.numerosVendidos }} / {{ r.cantidadNumeros }} tickets</span>
+          <span>{{ getClosingLabel(r) }}</span>
+        </div>
+      </div>
+
+      <div class="card-actions" *ngIf="canClose(r) || canDraw(r) || canReopen(r)">
+        <button type="button" class="card-action card-action-primary" *ngIf="canClose(r)" (click)="cerrarRifa(r)">
+          <span class="material-symbols-outlined">lock</span>
+          <span>Cerrar rifa</span>
+        </button>
+
+        <button type="button" class="card-action card-action-highlight" *ngIf="canDraw(r)" (click)="ejecutarSorteo(r)">
+          <span class="material-symbols-outlined">casino</span>
+          <span>Ejecutar sorteo</span>
+        </button>
+
+        <button type="button" class="card-action card-action-secondary" *ngIf="canReopen(r)" (click)="reabrirRifa(r)">
+          <span class="material-symbols-outlined">lock_open</span>
+          <span>Reabrir rifa</span>
+        </button>
+      </div>
+
+      <div class="card-footer">
+        <div class="meta-chip" [class.subtle]="isMetaSubtle(r)">{{ getMetaLabel(r) }}</div>
+
+        <button type="button" class="manage-button" (click)="verDetalle(r)">
+          {{ getActionLabel(r) }}
+        </button>
+      </div>
+    </div>
+  </article>
+
+  <article class="empty-state" *ngIf="!filteredRifas.length">
+    <span class="material-symbols-outlined">travel_explore</span>
+    <h3>No hay sorteos para este filtro</h3>
+    <p>Ajusta el estado o crea un nuevo sorteo para comenzar.</p>
+  </article>
+
+  <article class="create-card" (click)="nuevaRifa()">
+    <div class="create-icon">
+      <span class="material-symbols-outlined">add</span>
+    </div>
+
+    <div>
+      <h3>Crear nuevo sorteo</h3>
+      <p>Configura premios, folios y fechas.</p>
+    </div>
+  </article>
+</section>
+
+<ng-template #loadingState>
+  <section class="loading-card">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    <p>Cargando sorteos...</p>
+  </section>
+</ng-template>

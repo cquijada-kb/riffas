@@ -1,0 +1,106 @@
+<div class="home">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__content">
+      <h1>Participa y gana premios increibles</h1>
+      <p>Elige una rifa, compra tus numeros y paga en segundos con Flow.</p>
+
+      <div class="hero__actions">
+        <button class="btn btn-primary" (click)="scrollToList()">Ver rifas activas</button>
+        <div class="hero__chips">
+          <span class="chip">Pago seguro</span>
+          <span class="chip">Numeros aleatorios</span>
+          <span class="chip">Proceso simple</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__decor"></div>
+  </section>
+
+  <!-- FILTERS -->
+  <section class="filters" id="listado">
+    <div class="filters__left">
+      <input
+        class="input"
+        type="text"
+        placeholder="Buscar rifa..."
+        [(ngModel)]="q"
+        (input)="applyFilters()"
+      />
+    </div>
+
+    <div class="filters__right">
+      <select class="select" [(ngModel)]="sortBy" (change)="applyFilters()">
+        <option value="recent">Mas recientes</option>
+        <option value="sold">Mas vendidas</option>
+        <option value="ending">Mas cerca de terminar</option>
+        <option value="priceAsc">Menor precio</option>
+      </select>
+
+      <div class="segmented">
+        <button [class.active]="statusFilter==='all'" (click)="setStatus('all')">Todas</button>
+        <button [class.active]="statusFilter==='new'" (click)="setStatus('new')">Nuevas</button>
+        <button [class.active]="statusFilter==='ending'" (click)="setStatus('ending')">Por terminar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRID -->
+  <section class="grid">
+    <div *ngIf="loading" class="empty">Cargando rifas...</div>
+
+    <div *ngIf="!loading && filtered.length === 0" class="empty">
+      No hay rifas activas para mostrar.
+    </div>
+
+    <article class="card" *ngFor="let r of filtered" (click)="goToRaffle(r.id)">
+      <div class="card__image">
+        <img [src]="r.imageUrl || fallbackImg" alt="Premio" />
+        <span
+  class="badge"
+  [ngClass]="{
+    'ending': r.badge === 'POR TERMINAR',
+    'soldout': r.badge === 'AGOTADA'
+  }"
+  *ngIf="r.badge"
+>
+  {{ r.badge }}
+</span>
+
+      </div>
+
+      <div class="card__body">
+        <h3 class="card__title">{{ r.nombre }}</h3>
+
+        <div class="price">
+          <span class="price__label">Precio por numero</span>
+          <span class="price__value">{{ r.precioNumero | currency:'CLP':'symbol-narrow' }}</span>
+        </div>
+
+        <div class="progress">
+          <div class="progress__top">
+            <span>Avance</span>
+            <strong>{{ r.progressPercent }}%</strong>
+          </div>
+          <div class="progress__bar">
+            <div class="progress__fill" [style.width.%]="r.progressPercent"></div>
+          </div>
+          <div class="progress__bottom">
+            Vendidos {{ r.vendidos }} de {{ r.totalNumeros }}
+          </div>
+        </div>
+
+        <button
+          class="btn btn-dark w-100"
+          [disabled]="r.agotada"
+          (click)="$event.stopPropagation(); goToRaffle(r.id)"
+        >
+          {{ r.agotada ? 'Agotada' : 'Ver rifa' }}
+        </button>
+      </div>
+    </article>
+  </section>
+
+</div>

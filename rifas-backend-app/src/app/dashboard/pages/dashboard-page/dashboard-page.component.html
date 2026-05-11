@@ -1,0 +1,195 @@
+<section class="dashboard-page">
+  <section class="metrics-grid">
+    <article class="metric-card" *ngFor="let metric of metrics">
+      <div class="metric-icon">
+        <span class="material-symbols-outlined">{{ metric.icon }}</span>
+      </div>
+      <p>{{ metric.label }}</p>
+      <div class="metric-value-row">
+        <h2>{{ metric.value }}</h2>
+        <span class="trend" [class.subtle]="metric.subtle">
+          <span class="material-symbols-outlined" *ngIf="!metric.subtle">trending_up</span>
+          {{ metric.trend }}
+        </span>
+      </div>
+      <small>{{ metric.detail }}</small>
+    </article>
+  </section>
+
+  <section class="main-grid">
+    <article class="chart-card">
+      <div class="card-header">
+        <div>
+          <h3>Actividad de Ventas</h3>
+          <p>
+            {{ selectedChartRange === 'month' ? 'Rendimiento de ingresos en las ultimas 4 semanas' : 'Rendimiento de ingresos en los ultimos 7 dias' }}
+          </p>
+        </div>
+        <div class="range-switch">
+          <button
+            type="button"
+            [class.active]="selectedChartRange === 'month'"
+            (click)="setChartRange('month')"
+          >
+            Mes
+          </button>
+          <button
+            type="button"
+            [class.active]="selectedChartRange === 'week'"
+            (click)="setChartRange('week')"
+          >
+            Semana
+          </button>
+        </div>
+      </div>
+
+      <div class="chart-area">
+        <div class="chart-guides">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <div class="chart-bars" [style.gridTemplateColumns]="'repeat(' + salesBars.length + ', 1fr)'">
+          <div
+            class="bar"
+            *ngFor="let bar of salesBars"
+            [style.height.%]="bar.height"
+            [class.variant]="bar.tone === 'variant'"
+            [class.primary]="bar.tone === 'primary'"
+            [class.secondary]="bar.tone === 'secondary'"
+          ></div>
+        </div>
+      </div>
+
+      <div class="chart-labels">
+        <span *ngFor="let label of chartLabels">{{ label }}</span>
+      </div>
+    </article>
+
+    <aside class="side-stack">
+      <article class="platform-card">
+        <h4>Estado Operativo</h4>
+        <div class="platform-status" *ngFor="let item of operationalStatus">
+          <span class="pulse" [class.warning]="item.tone === 'warning'" [class.neutral]="item.tone === 'neutral'"></span>
+          <div class="platform-copy">
+            <strong>{{ item.label }}</strong>
+            <span>{{ item.value }}</span>
+          </div>
+        </div>
+        <button type="button" (click)="goToPayments()">Revisar Pagos</button>
+      </article>
+
+      <article class="winners-card">
+        <h4>Ganadores Recientes</h4>
+        <div class="winner-row" *ngFor="let winner of winners">
+          <div
+            class="winner-badge"
+            [class.tertiary]="winner.tone === 'tertiary'"
+            [class.secondary]="winner.tone === 'secondary'"
+          >
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div class="winner-copy">
+            <strong>{{ winner.name }}</strong>
+            <span>{{ winner.prize }}</span>
+          </div>
+          <small>{{ winner.time }}</small>
+        </div>
+        <p class="empty-copy" *ngIf="!winners.length">Aun no hay sorteos finalizados con ganador para mostrar.</p>
+      </article>
+    </aside>
+  </section>
+
+  <section class="table-card">
+    <div class="table-header">
+      <h3>Vista General de Sorteos Activos</h3>
+      <button type="button" (click)="goToAllRaffles()">Ver Todo</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Detalles del Sorteo</th>
+            <th>Progreso de Ventas</th>
+            <th>Fecha de Cierre</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let raffle of activeRaffles">
+            <td>
+              <div class="raffle-cell">
+                <div class="raffle-thumb">
+                  <img *ngIf="raffle.image" [src]="raffle.image" [alt]="raffle.title" />
+                </div>
+                <div>
+                  <strong>{{ raffle.title }}</strong>
+                  <span>ID: {{ raffle.id }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="progress-group">
+                <div class="progress-copy">
+                  <span>{{ raffle.sold }}% Vendido</span>
+                  <small>{{ raffle.tickets }}</small>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" [style.width.%]="raffle.sold"></div>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="closing-copy">
+                <strong>{{ raffle.closing }}</strong>
+                <span [class.urgent]="raffle.statusTone === 'error'">{{ raffle.urgency }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span
+                class="status-pill"
+                [class.secondary]="raffle.statusTone === 'secondary'"
+                [class.tertiary]="raffle.statusTone === 'tertiary'"
+                [class.error]="raffle.statusTone === 'error'"
+              >
+                {{ raffle.status }}
+              </span>
+            </td>
+
+            <td class="actions-cell">
+              <button type="button" class="icon-button" [matMenuTriggerFor]="raffleActionsMenu">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+              <mat-menu #raffleActionsMenu="matMenu">
+                <button mat-menu-item (click)="goToRaffleDetail(raffle.id)">
+                  <span class="material-symbols-outlined">visibility</span>
+                  <span>Ver detalle</span>
+                </button>
+                <button mat-menu-item (click)="goToRaffleEdit(raffle.id)">
+                  <span class="material-symbols-outlined">edit</span>
+                  <span>Editar</span>
+                </button>
+                <button mat-menu-item (click)="goToAllRaffles()">
+                  <span class="material-symbols-outlined">list</span>
+                  <span>Ir a rifas</span>
+                </button>
+              </mat-menu>
+            </td>
+          </tr>
+          <tr *ngIf="!activeRaffles.length">
+            <td colspan="5" class="empty-table">No hay rifas activas disponibles en este momento.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

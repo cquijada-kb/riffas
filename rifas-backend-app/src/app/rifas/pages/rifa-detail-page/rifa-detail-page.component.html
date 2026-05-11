@@ -1,0 +1,150 @@
+<div *ngIf="loading" class="center">
+  <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+</div>
+
+<section *ngIf="!loading && rifa" class="detail-shell">
+  <section class="hero-card">
+    <div class="hero-copy">
+      <p class="eyebrow">Detalle del sorteo</p>
+      <h2>{{ rifa.titulo }}</h2>
+      <p class="subtitle">{{ rifa.descripcionPremio }}</p>
+      <span
+        class="estado-chip"
+        [ngClass]="{
+          'abierta': rifa.estado === 'ABIERTA',
+          'cerrada': rifa.estado === 'CERRADA',
+          'finalizada': rifa.estado === 'FINALIZADA'
+        }"
+      >
+        {{ rifa.estado }}
+      </span>
+    </div>
+
+    <div class="hero-actions">
+      <button mat-stroked-button (click)="volver()">
+        <span class="material-symbols-outlined action-icon">arrow_back</span>
+        Volver
+      </button>
+
+      <button mat-stroked-button color="accent" (click)="editar()" *ngIf="puedeEditar()">
+        <span class="material-symbols-outlined action-icon">edit</span>
+        Editar
+      </button>
+    </div>
+  </section>
+
+  <section class="hero-media" *ngIf="getPrimaryImage() as heroImage; else noHeroImage">
+    <img [src]="heroImage" [alt]="rifa.titulo" />
+  </section>
+
+  <ng-template #noHeroImage>
+    <section class="hero-media placeholder">
+      <span class="material-symbols-outlined">image</span>
+    </section>
+  </ng-template>
+
+  <section class="detail-grid">
+    <article class="panel-card main-panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow dark">Resumen</p>
+          <h3>Metricas y estado comercial</h3>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="label">Precio por numero</span>
+          <strong>${{ rifa.precioPorNumero | number }}</strong>
+        </div>
+        <div class="stat-card">
+          <span class="label">Total numeros</span>
+          <strong>{{ rifa.cantidadNumeros }}</strong>
+        </div>
+        <div class="stat-card">
+          <span class="label">Limite por usuario</span>
+          <strong>{{ rifa.limitePorUsuario }}</strong>
+        </div>
+        <div class="stat-card" *ngIf="rifa.fechaCierre">
+          <span class="label">Fecha de cierre</span>
+          <strong>{{ rifa.fechaCierre | date: 'mediumDate' }}</strong>
+        </div>
+      </div>
+
+      <div class="progress-card">
+        <div class="progress-line">
+          <span>{{ rifa.numerosVendidos }} / {{ rifa.cantidadNumeros }} vendidos</span>
+          <strong>{{ getPorcentaje() }}%</strong>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="getPorcentaje()"></mat-progress-bar>
+      </div>
+
+      <div class="action-row">
+        <button mat-stroked-button color="accent" (click)="cerrarRifa()" *ngIf="puedeCerrar()">
+          <span class="material-symbols-outlined action-icon">lock</span>
+          Cerrar rifa
+        </button>
+
+        <button mat-flat-button color="primary" (click)="sortear()" *ngIf="puedeSortear()">
+          <span class="material-symbols-outlined action-icon">casino</span>
+          Ejecutar sorteo
+        </button>
+
+        <button mat-stroked-button color="primary" (click)="reabrirRifa()" *ngIf="puedeReabrir()">
+          <span class="material-symbols-outlined action-icon">lock_open</span>
+          Reabrir rifa
+        </button>
+      </div>
+
+      <div class="winner-banner" *ngIf="ganador">
+        <strong>Ganador</strong>
+        <span>{{ ganador }}</span>
+      </div>
+
+      <div class="winner-detail" *ngIf="ganadorDetalle">
+        <strong>Ganador confirmado</strong>
+        <span>Numero: {{ ganadorDetalle.numero }}</span>
+        <span *ngIf="ganadorDetalle.nombre">Nombre: {{ ganadorDetalle.nombre }}</span>
+        <span *ngIf="ganadorDetalle.telefono">Telefono: {{ ganadorDetalle.telefono }}</span>
+        <span *ngIf="ganadorDetalle.email">Email: {{ ganadorDetalle.email }}</span>
+      </div>
+    </article>
+
+    <aside class="side-stack">
+      <article class="panel-card">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow dark">Galeria</p>
+            <h3>Imagenes del premio</h3>
+          </div>
+        </div>
+
+        <div *ngIf="(rifa.imagenes?.length ?? 0) > 0; else noImages" class="images">
+          <div class="img" *ngFor="let url of rifa.imagenes">
+            <img [src]="url" alt="Imagen premio" />
+          </div>
+        </div>
+
+        <ng-template #noImages>
+          <div class="empty">No hay imagenes cargadas.</div>
+        </ng-template>
+      </article>
+
+      <article class="panel-card dark-side">
+        <p class="eyebrow">Lectura operativa</p>
+        <h3>{{ rifa.estado === 'ABIERTA' ? 'Venta activa' : rifa.estado === 'CERRADA' ? 'Lista para sorteo' : 'Proceso finalizado' }}</h3>
+        <span>
+          {{
+            rifa.estado === 'ABIERTA'
+              ? 'El sorteo sigue abierto y puede recibir mas compras segun el limite configurado.'
+              : rifa.estado === 'CERRADA'
+                ? 'La venta esta cerrada y la rifa ya puede pasar a ejecucion del sorteo.'
+                : 'La rifa ya tiene un cierre operativo y puede usarse como referencia historica.'
+          }}
+        </span>
+      </article>
+    </aside>
+  </section>
+</section>
+
+<div *ngIf="!loading && !rifa" class="empty">No se encontro la rifa.</div>

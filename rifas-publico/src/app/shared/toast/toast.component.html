@@ -1,0 +1,8 @@
+<div class="toast" *ngIf="toast.state.open" [ngClass]="toast.state.type" (click)="toast.hide()">
+  <div class="dot"></div>
+  <div class="body">
+    <div class="title">{{ toast.state.title }}</div>
+    <div class="msg" *ngIf="toast.state.message">{{ toast.state.message }}</div>
+  </div>
+  <div class="close">Cerrar</div>
+</div>

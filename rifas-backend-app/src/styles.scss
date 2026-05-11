@@ -1,0 +1,49 @@
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$primary: mat.define-palette(mat.$indigo-palette, 500, 300, 700);
+$accent: mat.define-palette(mat.$pink-palette, 500, 300, 700);
+$warn: mat.define-palette(mat.$red-palette);
+
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary,
+    accent: $accent,
+    warn: $warn
+  ),
+  typography: mat.define-typography-config(
+    $font-family: 'Inter, sans-serif'
+  ),
+  density: 0
+));
+
+@include mat.all-component-themes($theme);
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #0d1c2e;
+  background: #f8f9ff;
+}
+
+.app-shell {
+  height: 100vh;
+  display: flex;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}

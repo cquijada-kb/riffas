@@ -1,0 +1,126 @@
+<main class="raffles-page">
+  <div class="raffles-layout container">
+    <aside class="raffles-sidebar panel">
+      <div class="raffles-sidebar__section">
+        <h3>Filtrar por categoria</h3>
+
+        <label class="raffles-check" *ngFor="let category of categoryFilters">
+          <input type="checkbox" [checked]="category.checked" (change)="toggleCategory(category.key)">
+          <span class="raffles-check__mark">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9.55 18 3.85 12.3l1.4-1.4 4.3 4.3 9.2-9.2 1.4 1.4Z"/>
+            </svg>
+          </span>
+          <span>{{ category.label }}</span>
+        </label>
+      </div>
+
+      <div class="raffles-sidebar__section">
+        <h3>Estado</h3>
+
+        <button class="status-chip status-chip--active" type="button">
+          {{ activeStatusLabel }}
+          <span class="status-chip__dot"></span>
+        </button>
+        <p class="status-note">Por ahora se muestran solo rifas disponibles para compra.</p>
+      </div>
+
+      <div class="raffles-help">
+        <p class="raffles-help__title">Necesitas ayuda?</p>
+        <p class="raffles-help__copy">Si tienes dudas sobre compras, pagos o resultados, escribenos y te orientamos con el proceso.</p>
+        <a class="raffles-help__link" href="mailto:soporte@fortuna.studio">Contactar soporte</a>
+      </div>
+    </aside>
+
+    <section class="raffles-content">
+      <header class="raffles-header">
+        <div>
+          <h1>Catalogo de Fortuna</h1>
+          <p>Explora nuestra seleccion curada de activos de lujo. Cada boleto es una puerta a una nueva oportunidad.</p>
+        </div>
+
+        <div class="raffles-tabs">
+          <button type="button" [class.active]="sortMode === 'popular'" (click)="setSort('popular')">Populares</button>
+          <button type="button" [class.active]="sortMode === 'newest'" (click)="setSort('newest')">Nuevos</button>
+          <button type="button" [class.active]="sortMode === 'ending'" (click)="setSort('ending')">Finalizando</button>
+        </div>
+      </header>
+
+      <div class="raffles-grid" *ngIf="!loading; else loadingState">
+        <article class="raffle-card panel" *ngFor="let item of visibleRaffles; trackBy: trackById" (click)="openRaffle(item.id)">
+          <div class="raffle-card__media">
+            <img [src]="item.imageUrl || 'assets/placeholder-prize.jpg'" [alt]="item.nombre">
+            <span class="raffle-card__category">{{ item.category }}</span>
+          </div>
+
+          <div class="raffle-card__body">
+            <div class="raffle-card__top">
+              <h2>{{ item.nombre }}</h2>
+              <div class="raffle-card__value">
+                <span>Valor</span>
+                <strong>{{ item.prizeLabel }}</strong>
+              </div>
+            </div>
+
+            <p class="raffle-card__summary">{{ item.summary }}</p>
+
+            <div class="raffle-card__progress">
+              <div class="raffle-card__progress-head">
+                <span>Progreso de venta</span>
+                <strong>{{ item.progressPercent }}%</strong>
+              </div>
+              <div class="raffle-card__bar">
+                <div class="raffle-card__bar-fill" [style.width.%]="item.progressPercent"></div>
+              </div>
+              <div class="raffle-card__meta">
+                <span>{{ item.totalNumeros - item.vendidos }} boletos restantes</span>
+                <strong>{{ item.endingLabel }}</strong>
+              </div>
+            </div>
+
+            <div class="raffle-card__footer">
+              <div>
+                <span>Precio boleto</span>
+                <strong>{{ item.precioNumero | currency:'CLP':'symbol-narrow' }}</strong>
+              </div>
+
+              <button class="raffle-card__cta" type="button" (click)="$event.stopPropagation(); openRaffle(item.id)">
+                Participar ahora
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="raffles-empty panel" *ngIf="!visibleRaffles.length">
+          <h2>Sin resultados para este filtro</h2>
+          <p>Activa otra categoria para volver a ver rifas disponibles.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <footer class="raffles-footer">
+    <div class="container raffles-footer__inner">
+      <div class="raffles-footer__brand">Fortuna Studio</div>
+      <div class="raffles-footer__copy">© 2024 FORTUNA STUDIO. EL ESTANDAR DEL AZAR DE LUJO. TRANSACCIONES ENCRIPTADAS.</div>
+      <div class="raffles-footer__links">
+        <a href="javascript:void(0)">Terminos y condiciones</a>
+        <a href="javascript:void(0)">Privacidad</a>
+        <a href="javascript:void(0)">Soporte</a>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<ng-template #loadingState>
+  <div class="raffles-grid">
+    <article class="raffle-card panel raffle-card--loading" *ngFor="let item of [1, 2, 3, 4, 5, 6]">
+      <div class="raffle-card__media"></div>
+      <div class="raffle-card__body">
+        <div class="loading-line loading-line--title"></div>
+        <div class="loading-line"></div>
+        <div class="loading-line loading-line--short"></div>
+      </div>
+    </article>
+  </div>
+</ng-template>

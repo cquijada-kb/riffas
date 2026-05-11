@@ -1,0 +1,172 @@
+<section class="form-shell">
+  <section class="hero-card">
+    <div>
+      <p class="eyebrow">{{ isEdit ? 'Edicion de sorteo' : 'Nuevo sorteo' }}</p>
+      <h2>{{ isEdit ? 'Editar rifa' : 'Crear nueva rifa' }}</h2>
+      <p class="lede">
+        Define premio, capacidad, limite de compra e imagenes dentro del mismo lenguaje editorial del panel.
+      </p>
+    </div>
+
+    <div class="hero-side">
+      <div class="hero-chip">
+        <span class="material-symbols-outlined">confirmation_number</span>
+        <span>Configuracion guiada</span>
+      </div>
+      <div class="hero-metric">
+        <small>Estado</small>
+        <strong>{{ isEdit ? 'Edicion' : 'Borrador' }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <form class="editor-grid" [formGroup]="form" (ngSubmit)="submit()">
+    <section class="main-panel">
+      <article class="panel-card">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Base del sorteo</p>
+            <h3>Informacion principal</h3>
+          </div>
+        </div>
+
+        <div class="field-stack">
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Titulo o nombre de la rifa</mat-label>
+            <input matInput formControlName="titulo" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Descripcion del premio</mat-label>
+            <textarea matInput rows="4" formControlName="descripcionPremio"></textarea>
+          </mat-form-field>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Numeracion y precio</p>
+            <h3>Reglas comerciales</h3>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Cantidad total de numeros</mat-label>
+            <mat-select formControlName="cantidadNumeros">
+              <mat-option *ngFor="let c of cantidadesPreset" [value]="c">
+                {{ c }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Precio por numero</mat-label>
+            <input matInput type="number" formControlName="precioPorNumero" />
+            <span matTextPrefix>$&nbsp;</span>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Limite maximo por usuario</mat-label>
+            <input matInput type="number" formControlName="limitePorUsuario" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Fecha de cierre (opcional)</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="fechaCierre" />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Activos visuales</p>
+            <h3>Imagenes del premio</h3>
+          </div>
+        </div>
+
+        <p class="panel-copy" *ngIf="isEdit">
+          Si subes nuevas imagenes, se reemplazaran las actuales. Maximo 3 archivos.
+        </p>
+
+        <div *ngIf="imagenesExistentes.length > 0" class="preview-grid">
+          <div class="preview" *ngFor="let url of imagenesExistentes">
+            <img [src]="url" alt="Imagen existente del premio" />
+          </div>
+        </div>
+
+        <label class="upload-card">
+          <span class="material-symbols-outlined">upload</span>
+          <div>
+            <strong>Subir nuevas imagenes</strong>
+            <p>Arrastra archivos o haz clic para seleccionar hasta 3 imagenes.</p>
+          </div>
+          <input type="file" accept="image/*" multiple (change)="onNewImagesSelected($event)" />
+        </label>
+
+        <div *ngIf="imagenesNuevas.length > 0" class="preview-grid">
+          <div class="preview interactive" *ngFor="let img of imagenesNuevas; let i = index">
+            <img [src]="img.preview" alt="Nueva imagen del premio" />
+            <button type="button" class="remove-preview" (click)="removeNewImage(i)">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <aside class="side-panel">
+      <article class="side-card dark">
+        <p class="eyebrow">Resumen rapido</p>
+        <h3>{{ form.get('titulo')?.value || 'Nuevo sorteo editorial' }}</h3>
+        <span>
+          {{ form.get('descripcionPremio')?.value || 'Completa el formulario para previsualizar el enfoque del premio.' }}
+        </span>
+      </article>
+
+      <article class="side-card">
+        <p class="eyebrow">Checklist</p>
+        <div class="check-item">
+          <strong>Titulo y descripcion</strong>
+          <span>{{ form.get('titulo')?.value && form.get('descripcionPremio')?.value ? 'Completo' : 'Pendiente' }}</span>
+        </div>
+        <div class="check-item">
+          <strong>Reglas del sorteo</strong>
+          <span>
+            {{
+              form.get('cantidadNumeros')?.value && form.get('precioPorNumero')?.value && form.get('limitePorUsuario')?.value
+                ? 'Completo'
+                : 'Pendiente'
+            }}
+          </span>
+        </div>
+        <div class="check-item">
+          <strong>Imagenes</strong>
+          <span>{{ imagenesExistentes.length + imagenesNuevas.length > 0 ? 'Cargadas' : 'Opcional' }}</span>
+        </div>
+      </article>
+
+      <article class="side-card note">
+        <p class="eyebrow">Sugerencia</p>
+        <span>
+          Los sorteos con una descripcion concreta y un limite claro por usuario suelen convertir mejor en el panel comercial.
+        </span>
+      </article>
+    </aside>
+
+    <div class="actions">
+      <button mat-stroked-button routerLink="/rifas">
+        Cancelar
+      </button>
+      <button mat-flat-button color="primary" [disabled]="loading">
+        {{ isEdit ? 'Guardar cambios' : 'Crear rifa' }}
+      </button>
+    </div>
+  </form>
+</section>

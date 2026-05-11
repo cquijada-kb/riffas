@@ -1,0 +1,76 @@
+<mat-sidenav-container class="app-shell">
+  <mat-sidenav mode="side" [opened]="opened" class="app-sidenav">
+    <div class="brand-card">
+      <div class="brand-mark">
+        <span class="material-symbols-outlined">account_balance_wallet</span>
+      </div>
+      <div>
+        <h1>Sovereign Ledger</h1>
+        <p>Gestion de sorteos</p>
+      </div>
+    </div>
+
+    <nav class="nav-links">
+      <a
+        *ngFor="let item of navigation"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="nav-link"
+      >
+        <span class="material-symbols-outlined">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="side-footer">
+      <button class="primary-action" routerLink="/rifas/nueva">
+        <span class="material-symbols-outlined">add</span>
+        <span>Nuevo sorteo</span>
+      </button>
+
+      <a class="nav-link muted-link" href="javascript:void(0)">
+        <span class="material-symbols-outlined">settings</span>
+        <span>Ajustes</span>
+      </a>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="app-content">
+    <header class="topbar">
+      <button type="button" class="icon-button menu-button" (click)="opened = !opened">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <label class="search-box">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Buscar sorteos, usuarios o transacciones..." />
+      </label>
+
+      <div class="topbar-actions">
+        <button type="button" class="icon-button">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button type="button" class="icon-button">
+          <span class="material-symbols-outlined">help_outline</span>
+        </button>
+        <button type="button" class="secondary-action" (click)="downloadPaymentsReport()">
+          {{ canDownloadReport ? 'Descargar reporte' : 'Ir a reportes' }}
+        </button>
+        <div class="profile-chip">
+          <div>
+            <strong>Acceso Admin</strong>
+            <span>Perfil de gerente</span>
+          </div>
+          <button type="button" class="logout-action" (click)="logout()">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Salir</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

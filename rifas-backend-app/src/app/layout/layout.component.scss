@@ -1,0 +1,264 @@
+.app-shell {
+  height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(74, 225, 131, 0.12), transparent 20%),
+    linear-gradient(180deg, #f8f9ff 0%, #eef4ff 100%);
+}
+
+.app-sidenav {
+  width: 280px;
+  padding: 18px;
+  background: #eff4ff;
+  border-right: none;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+}
+
+.brand-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 8px 28px;
+
+  h1 {
+    margin: 0;
+    color: #041627;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #44474c;
+    font-size: 12px;
+  }
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #041627 0%, #1a2b3c 100%);
+  color: #fff;
+}
+
+.nav-links,
+.side-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-links {
+  flex: 1;
+}
+
+.nav-link,
+.primary-action,
+.secondary-action,
+.icon-button {
+  border: 0;
+  font: inherit;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  color: #5a6573;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.7);
+    color: #041627;
+  }
+
+  &.active {
+    background: #fff;
+    color: #041627;
+    font-weight: 700;
+    box-shadow: 0 12px 32px rgba(13, 28, 46, 0.06);
+  }
+}
+
+.side-footer {
+  padding-top: 20px;
+}
+
+.primary-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0 14px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #041627 0%, #1a2b3c 100%);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(13, 28, 46, 0.12);
+}
+
+.muted-link {
+  color: #74777d;
+}
+
+.app-content {
+  background: transparent;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 28px;
+  background: rgba(248, 249, 255, 0.84);
+  backdrop-filter: blur(18px);
+}
+
+.menu-button {
+  display: none;
+}
+
+.search-box {
+  flex: 1;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  min-height: 48px;
+  border-radius: 999px;
+  background: #eff4ff;
+  color: #44474c;
+
+  input {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #0d1c2e;
+    font: inherit;
+  }
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: transparent;
+  color: #44474c;
+  cursor: pointer;
+}
+
+.secondary-action {
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(0, 109, 55, 0.12);
+  color: #006d37;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.logout-action {
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(4, 22, 39, 0.06);
+  color: #5a6573;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background: rgba(159, 31, 31, 0.1);
+    color: #8f1d1d;
+    transform: translateY(-1px);
+  }
+}
+
+.profile-chip {
+  padding-left: 14px;
+  margin-left: 4px;
+  border-left: 1px solid rgba(116, 119, 125, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  strong,
+  span {
+    display: block;
+  }
+
+  strong {
+    color: #041627;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  span {
+    color: #74777d;
+    font-size: 11px;
+  }
+}
+
+.app-main {
+  padding: 8px 28px 28px;
+}
+
+@media (max-width: 1100px) {
+  .app-sidenav {
+    width: 88vw;
+    max-width: 320px;
+  }
+
+  .menu-button {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .secondary-action,
+  .logout-action,
+  .profile-chip {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    padding: 16px;
+  }
+
+  .app-main {
+    padding: 8px 16px 20px;
+  }
+}

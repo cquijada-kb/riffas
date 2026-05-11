@@ -1,0 +1,177 @@
+<div class="container" *ngIf="loading">
+  <div class="detail-skeleton panel"></div>
+</div>
+
+<main class="detail-page" *ngIf="!loading && raffle">
+  <div class="container detail-shell">
+    <section class="detail-layout">
+      <div class="detail-gallery">
+        <div class="detail-hero">
+          <img
+            [src]="selectedImage || raffle.imageUrl || 'assets/placeholder-prize.jpg'"
+            [alt]="raffle.nombre"
+            (error)="onImgError($event)">
+
+          <div class="detail-hero__badges">
+            <span class="detail-pill detail-pill--gold">Premium</span>
+            <span class="detail-pill detail-pill--green">{{ raffle.status === 'ACTIVA' ? 'Sorteo activo' : (raffle.status || 'Disponible') }}</span>
+          </div>
+        </div>
+
+        <div class="detail-thumbs" *ngIf="raffle.images?.length">
+          <button
+            class="detail-thumb"
+            *ngFor="let img of raffle.images"
+            type="button"
+            (click)="setSelectedImage(img)"
+            [class.active]="img===selectedImage">
+            <img [src]="img" alt="Miniatura" loading="lazy">
+          </button>
+        </div>
+      </div>
+
+      <aside class="purchase-card">
+        <div class="purchase-card__copy">
+          <h1>{{ raffle.nombre }}</h1>
+          <p class="purchase-card__desc">{{ raffle.descripcion }}</p>
+        </div>
+
+        <div class="countdown">
+          <div class="countdown__head">
+            <div class="countdown__label">
+              <span class="countdown__dot"></span>
+              <span>Termina en:</span>
+            </div>
+            <strong>{{ urgencyLabel }}</strong>
+          </div>
+
+          <div class="countdown__grid">
+            <div class="countdown__item" *ngFor="let item of countDown">
+              <strong>{{ item.value }}</strong>
+              <span>{{ item.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="purchase-card__pricing">
+          <div>
+            <span class="purchase-card__label">Precio por boleto</span>
+            <strong class="purchase-card__amount">{{ raffle.precioNumero | currency:'CLP':'symbol-narrow' }}</strong>
+          </div>
+
+          <div class="purchase-card__sold">{{ raffle.progressPercent }}% vendido</div>
+        </div>
+
+        <div class="quantity-panel">
+          <label for="raffle-quantity">Seleccionar cantidad</label>
+
+          <div class="quantity-stepper">
+            <button type="button" class="quantity-stepper__btn" (click)="decQuantity()">-</button>
+            <input
+              id="raffle-quantity"
+              class="quantity-stepper__input"
+              type="number"
+              [value]="selectedQuantity"
+              [min]="1"
+              [max]="maxAllowed"
+              step="1"
+              (input)="setQuantity(+$any($event.target).value)">
+            <button type="button" class="quantity-stepper__btn" (click)="incQuantity()">+</button>
+          </div>
+
+          <small>
+            Selección actual: {{ quantityLabel }}. Máximo permitido: {{ maxAllowed }}.
+          </small>
+        </div>
+
+        <button class="purchase-card__cta" type="button" (click)="buy()">
+          {{ raffle.status==='FINALIZADA' ? 'Ver ganador' : '¡Participar ahora!' }}
+        </button>
+
+        <div class="purchase-card__trust">
+          <div class="purchase-card__trust-item">
+            <span class="purchase-card__trust-icon">lock</span>
+            <span>Pago seguro</span>
+          </div>
+          <div class="purchase-card__trust-item">
+            <span class="purchase-card__trust-icon">verified</span>
+            <span>Sorteo certificado</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="transparency-section">
+      <h2>Compromiso de transparencia</h2>
+
+      <div class="transparency-grid">
+        <article class="transparency-card transparency-card--green">
+          <div class="transparency-card__icon">security</div>
+          <h3>{{ trustItems[0].title }}</h3>
+          <p>{{ trustItems[0].copy }}</p>
+        </article>
+
+        <article class="transparency-card transparency-card--gold">
+          <div class="transparency-card__icon">visibility</div>
+          <h3>{{ trustItems[1].title }}</h3>
+          <p>{{ trustItems[1].copy }}</p>
+        </article>
+
+        <article class="transparency-card transparency-card--violet">
+          <div class="transparency-card__icon">account_balance</div>
+          <h3>{{ trustItems[2].title }}</h3>
+          <p>{{ trustItems[2].copy }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="rules-section">
+      <h2>Reglas del sorteo</h2>
+
+      <div class="rules-list">
+        <div class="rule" *ngFor="let rule of rules; let index = index">
+          <span class="rule__index">{{ index + 1 | number:'2.0' }}.</span>
+          <p>{{ rule }}</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="detail-footer">
+    <div class="container detail-footer__inner">
+      <div class="detail-footer__brand">Fortuna Studio</div>
+
+      <div class="detail-footer__links">
+        <a href="javascript:void(0)">Términos y condiciones</a>
+        <a href="javascript:void(0)">Privacidad</a>
+        <a href="javascript:void(0)">Certificaciones</a>
+        <a href="javascript:void(0)">Soporte</a>
+      </div>
+
+      <div class="detail-footer__icons">
+        <button class="detail-footer__icon" type="button" aria-label="Marca">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m3 13 8.5-8.5L13 6l-7 7 7 7-1.5 1.5Z"/>
+          </svg>
+        </button>
+        <button class="detail-footer__icon" type="button" aria-label="Contacto">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 0 18h4v-2h-4a7 7 0 1 1 7-7v1h-6v2h7.9a8.8 8.8 0 0 0 .1-1 9 9 0 0 0-9-9Z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="detail-footer__copy">© 2024 FORTUNA STUDIO. EL ESTÁNDAR DEL AZAR DE LUJO. TRANSACCIONES ENCRIPTADAS.</div>
+    </div>
+  </footer>
+</main>
+
+<app-purchase-modal
+  *ngIf="raffle"
+  [raffle]="raffle"
+  [open]="openBuy"
+  [initialQuantity]="selectedQuantity"
+  (closed)="openBuy=false"></app-purchase-modal>
+<app-toast></app-toast>

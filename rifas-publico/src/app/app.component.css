@@ -1,0 +1,82 @@
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:40;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background:rgba(9,9,16,.78);
+  backdrop-filter:blur(16px);
+  box-shadow:0 20px 40px rgba(0,0,0,.18);
+}
+
+.inner{
+  min-height:84px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:24px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.brand__mark{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--primary-strong), var(--secondary));
+  box-shadow:0 0 0 6px rgba(184,159,255,.08);
+}
+
+.brand__name{
+  font-family:"Space Grotesk","Segoe UI",sans-serif;
+  font-size:1.25rem;
+  font-weight:900;
+  letter-spacing:-.04em;
+}
+
+.brand__tag{
+  color:var(--muted);
+  font-size:.72rem;
+  text-transform:uppercase;
+  letter-spacing:.2em;
+}
+
+.right{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+
+.link{
+  color:var(--muted);
+  font-family:"Space Grotesk","Segoe UI",sans-serif;
+  font-size:.9rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  transition:color .2s ease;
+}
+
+.link:hover,
+.link--active{
+  color:var(--secondary);
+}
+
+@media (max-width: 900px){
+  .inner{
+    min-height:72px;
+  }
+
+  .right{
+    gap:14px;
+  }
+}
+
+@media (max-width: 700px){
+  .brand__tag{
+    display:none;
+  }
+}

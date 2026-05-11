@@ -1,0 +1,7 @@
+export enum RaffleStatus {
+  BORRADOR = 'BORRADOR',
+  ACTIVA = 'ACTIVA',
+  PAUSADA = 'PAUSADA',
+  CERRADA = 'CERRADA',
+  FINALIZADA = 'FINALIZADA',
+}

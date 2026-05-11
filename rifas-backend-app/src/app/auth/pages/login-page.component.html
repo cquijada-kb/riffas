@@ -1,0 +1,34 @@
+<div class="login-card">
+  <div class="login-header">
+    <div class="logo-icon">🎟️</div>
+    <h1>Ingresar al panel</h1>
+    <p>Accede al panel de administración de tus rifas.</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Usuario</mat-label>
+      <input matInput formControlName="email" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Contraseña</mat-label>
+      <input matInput type="password" formControlName="password" />
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-flat-button color="primary" class="full-width" [disabled]="loading">
+        <mat-progress-spinner
+          *ngIf="loading"
+          diameter="18"
+          mode="indeterminate"
+        ></mat-progress-spinner>
+        <span *ngIf="!loading">Entrar</span>
+      </button>
+    </div>
+  </form>
+
+  <div class="footer-text">
+    Solo organizadores autorizados pueden acceder a este panel.
+  </div>
+</div>

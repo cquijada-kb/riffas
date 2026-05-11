@@ -1,0 +1,7 @@
+.toast{ position:fixed; right:16px; bottom:16px; z-index:60; display:flex; gap:12px; align-items:center;
+  padding:12px 14px; border-radius:16px; border:1px solid rgba(255,255,255,.14);
+  background:rgba(0,0,0,.35); backdrop-filter:blur(16px); box-shadow:var(--shadow2); min-width:280px; cursor:pointer; }
+.dot{ width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,.25); }
+.toast.success .dot{ background:var(--accent); } .toast.error .dot{ background:var(--danger); } .toast.info .dot{ background:var(--secondary); }
+.title{ font-weight:1000; } .msg{ color:var(--muted); font-weight:900; font-size:13px; margin-top:2px; line-height:1.35; }
+.close{ margin-left:auto; color:rgba(229,231,235,.75); font-weight:1000; font-size:12px; }

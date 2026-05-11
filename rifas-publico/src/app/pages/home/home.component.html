@@ -1,0 +1,142 @@
+<main class="home">
+  <section class="hero">
+    <div class="hero__media">
+      <img [src]="heroMock.imageUrl" alt="Hero Fortuna Studio" />
+      <div class="hero__veil"></div>
+    </div>
+
+    <div class="container hero__content">
+      <div class="hero__copy">
+        <span class="hero__eyebrow">{{ heroMock.label }}</span>
+        <h1 class="hero__title">
+          {{ heroMock.titleTop }}<br>
+          <span>{{ heroMock.titleBottom }}</span>
+        </h1>
+        <p class="hero__subtitle">{{ heroMock.copy }}</p>
+
+        <div class="hero__actions">
+          <button class="btn btn-primary" (click)="scrollToListado()">¡Participar Ahora!</button>
+          <button class="btn btn-ghost" (click)="scrollToListado()">Ver Detalles</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="showcase" id="catalogo">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Rifas destacadas</h2>
+          <p class="section-copy">Selección exclusiva de activos de alto valor para nuestros miembros.</p>
+        </div>
+        <button class="section-link" (click)="scrollToListado()">Ver todos los sorteos</button>
+      </div>
+
+      <div class="showcase__grid">
+        <article class="showcase-card panel" *ngFor="let item of chronologicalRaffles; trackBy: trackById" (click)="go(item.id)">
+          <div class="showcase-card__media">
+            <img [src]="item.imageUrl || 'assets/placeholder-prize.jpg'" [alt]="item.nombre">
+            <span class="showcase-card__badge">{{ item.badge || 'ACTIVO' }}</span>
+          </div>
+
+          <div class="showcase-card__body">
+            <h3>{{ item.nombre }}</h3>
+            <p>Rifa activa con asignación automática de números y compra segura integrada al flujo actual.</p>
+
+            <div class="showcase-card__pricing">
+              <div>
+                <span>Premio</span>
+                <strong>{{ item.progressPercent }}%</strong>
+              </div>
+              <div>
+                <span>Boleto</span>
+                <strong>{{ item.precioNumero | currency:'CLP':'symbol-narrow' }}</strong>
+              </div>
+            </div>
+
+            <button class="btn btn-ghost showcase-card__cta" (click)="$event.stopPropagation(); go(item.id)">Comprar Boleto</button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="fortune-wall">
+    <div class="container">
+      <div class="fortune-wall__head">
+        <h2 class="section-title">Muro de la fortuna</h2>
+        <p class="section-copy">Historias reales de ganadores que confiaron en nuestro estándar de azar de lujo.</p>
+      </div>
+
+      <div class="fortune-wall__grid">
+        <article class="fortune-card panel" *ngFor="let item of testimonials" [ngClass]="item.tilt">
+          <div class="fortune-card__person">
+            <img [src]="item.imageUrl" [alt]="item.name">
+            <div>
+              <strong>{{ item.name }}</strong>
+              <span>{{ item.prize }}</span>
+            </div>
+          </div>
+          <p>"{{ item.quote }}"</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container cta-band__content">
+      <h2>¿Listo para cambiar tu destino?</h2>
+      <p>Únete a nuestra comunidad exclusiva y accede a los sorteos de mayor prestigio en el mercado.</p>
+
+      <div class="cta-band__signals">
+        <div class="signal" *ngFor="let signal of trustSignals">
+          <span class="signal__icon" aria-hidden="true">
+            <svg *ngIf="signal === 'Transaccion encriptada'" viewBox="0 0 24 24">
+              <path d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-6 0V6a2 2 0 1 1 4 0v2h-4Z"/>
+            </svg>
+            <svg *ngIf="signal === 'Sorteo certificado'" viewBox="0 0 24 24">
+              <path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 11 4.16-.26 8-5.45 8-11V5l-8-3Zm-1.2 14.4L7.2 12.8l1.41-1.41 2.19 2.18 4.59-4.58 1.41 1.41-6 6Z"/>
+            </svg>
+            <svg *ngIf="signal === 'Soporte VIP 24/7'" viewBox="0 0 24 24">
+              <path d="M12 2a9 9 0 0 0-9 9v6a3 3 0 0 0 3 3h3v-8H5v-1a7 7 0 1 1 14 0v1h-4v8h3a3 3 0 0 0 3-3v-6a9 9 0 0 0-9-9Z"/>
+            </svg>
+          </span>
+          {{ signal }}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="home-footer">
+    <div class="container">
+      <div class="home-footer__top">
+        <div class="home-footer__brand">Fortuna Studio</div>
+
+        <div class="home-footer__links">
+          <a href="javascript:void(0)">Términos y condiciones</a>
+          <a href="javascript:void(0)">Privacidad</a>
+          <a href="javascript:void(0)">Certificaciones</a>
+          <a href="javascript:void(0)">Soporte</a>
+        </div>
+
+        <div class="home-footer__icons">
+          <button class="home-footer__icon" type="button" aria-label="Marca">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m3 13 8.5-8.5L13 6l-7 7 7 7-1.5 1.5Z"/>
+            </svg>
+          </button>
+          <button class="home-footer__icon" type="button" aria-label="Contacto">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 17a2 2 0 1 1 .001-3.999A2 2 0 0 1 10 17Zm0-6a2 2 0 1 1 .001-3.999A2 2 0 0 1 10 11Zm0-6a2 2 0 1 1 .001-3.999A2 2 0 0 1 10 5Zm8 12h-2v2h-2v-2h-2v-2h2v-2h2v2h2v2Z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="home-footer__bottom">
+        © 2024 FORTUNA STUDIO. EL ESTÁNDAR DEL AZAR DE LUJO. TRANSACCIONES ENCRIPTADAS.
+      </div>
+    </div>
+  </footer>
+</main>
+<app-toast></app-toast>
