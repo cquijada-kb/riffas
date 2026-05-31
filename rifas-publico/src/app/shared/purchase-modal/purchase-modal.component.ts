@@ -9,6 +9,7 @@ type PurchaseResponse = {
   ok?: boolean;
   paymentUrl?: string;
   reserveId?: string;
+  numbers?: number[];
   message?: string;
 };
 
@@ -24,10 +25,16 @@ export class PurchaseModalComponent implements OnChanges {
   @Output() closed = new EventEmitter<void>();
 
   loading = false;
+  paymentMethod: 'flow' | 'transferencia' = 'flow';
+  comprobante?: File;
 
   form = this.fb.group({
     compradorNombre: ['', [Validators.required, Validators.minLength(3)]],
     compradorEmail: ['', [Validators.required, Validators.email]],
+    compradorTelefono: [''],
+    compradorRut: [''],
+    compradorCiudad: [''],
+    paqueteId: [''],
     cantidad: [1, [Validators.required, Validators.min(1)]],
   });
 
@@ -42,6 +49,18 @@ export class PurchaseModalComponent implements OnChanges {
   }
   get compradorEmail() {
     return this.form.controls.compradorEmail;
+  }
+  get compradorTelefono() {
+    return this.form.controls.compradorTelefono;
+  }
+  get compradorRut() {
+    return this.form.controls.compradorRut;
+  }
+  get compradorCiudad() {
+    return this.form.controls.compradorCiudad;
+  }
+  get paqueteId() {
+    return this.form.controls.paqueteId;
   }
   get cantidad() {
     return this.form.controls.cantidad;
@@ -64,20 +83,63 @@ export class PurchaseModalComponent implements OnChanges {
     if (v > 1) this.cantidad.setValue(v - 1);
   }
 
+  setQuantity(quantity: number): void {
+    const max = this.maxAllowed();
+    const safe = Math.max(1, Math.min(Number(quantity) || 1, max));
+    this.cantidad.setValue(safe);
+  }
+
   total(): number {
     const q = Number(this.cantidad.value || 1);
+    const selected = this.selectedPackage();
+    if (selected) return selected.precio;
     return q * (this.raffle?.precioNumero ?? 0);
   }
 
   ngOnChanges(): void {
     const safe = Math.max(1, Math.min(this.initialQuantity || 1, this.maxAllowed()));
     this.cantidad.setValue(safe);
+    this.paqueteId.setValue('');
+    this.paymentMethod = 'flow';
+    this.comprobante = undefined;
   }
 
   close(): void {
     this.loading = false;
-    this.form.reset({ compradorNombre: '', compradorEmail: '', cantidad: 1 });
+    this.form.reset({
+      compradorNombre: '',
+      compradorEmail: '',
+      compradorTelefono: '',
+      compradorRut: '',
+      compradorCiudad: '',
+      paqueteId: '',
+      cantidad: 1,
+    });
+    this.paymentMethod = 'flow';
+    this.comprobante = undefined;
     this.closed.emit();
+  }
+
+  setPaymentMethod(method: 'flow' | 'transferencia'): void {
+    this.paymentMethod = method;
+  }
+
+  selectComprobante(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.comprobante = input.files?.[0] ?? undefined;
+  }
+
+  selectPackage(index: number): void {
+    const option = this.raffle?.paquetes?.[index];
+    if (!option) return;
+    this.paqueteId.setValue(String(index));
+    this.setQuantity(option.cantidad);
+  }
+
+  selectedPackage() {
+    const rawIndex = this.paqueteId.value;
+    if (rawIndex === null || rawIndex === undefined || rawIndex === '') return null;
+    return this.raffle?.paquetes?.[Number(rawIndex)] ?? null;
   }
 
   purchase(): void {
@@ -99,15 +161,63 @@ export class PurchaseModalComponent implements OnChanges {
 
     const compradorNombre = String(this.compradorNombre.value || '').trim();
     const compradorEmail = String(this.compradorEmail.value || '').trim();
+    const compradorTelefono = String(this.compradorTelefono.value || '').trim();
+    const compradorRut = String(this.compradorRut.value || '').trim();
+    const compradorCiudad = String(this.compradorCiudad.value || '').trim();
 
     if (!compradorNombre || !compradorEmail) {
       this.toast.show('error', 'Datos invalidos', 'Revisa nombre y correo.');
       return;
     }
 
+    if (this.paymentMethod === 'transferencia' && !this.comprobante) {
+      this.toast.show('error', 'Comprobante requerido', 'Sube la imagen o PDF de la transferencia.');
+      return;
+    }
+
     this.loading = true;
 
-    this.raffles.purchase(this.raffle.id, cantidad, compradorNombre, compradorEmail).subscribe({
+    if (this.paymentMethod === 'transferencia') {
+      this.raffles.manualPurchase(
+        this.raffle.id,
+        {
+          cantidad,
+          compradorNombre,
+          compradorEmail,
+          compradorTelefono,
+          compradorRut,
+          compradorCiudad,
+          paqueteId: String(this.paqueteId.value || ''),
+        },
+        this.comprobante,
+      ).subscribe({
+        next: (res: PurchaseResponse) => {
+          this.loading = false;
+          this.toast.show(
+            'success',
+            'Comprobante recibido',
+            res?.message || 'Tus tickets quedaron pendientes de verificacion.',
+          );
+          this.close();
+        },
+        error: (err) => {
+          this.loading = false;
+          this.toast.show(
+            'error',
+            'No se pudo registrar la transferencia',
+            err?.error?.message || 'Intenta nuevamente.',
+          );
+        },
+      });
+      return;
+    }
+
+    this.raffles.purchase(this.raffle.id, cantidad, compradorNombre, compradorEmail, {
+      compradorTelefono,
+      compradorRut,
+      compradorCiudad,
+      paqueteId: String(this.paqueteId.value || ''),
+    }).subscribe({
       next: (res: PurchaseResponse) => {
         this.loading = false;
 

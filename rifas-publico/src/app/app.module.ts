@@ -12,6 +12,7 @@ import { RaffleDetailComponent } from './pages/raffle-detail/raffle-detail.compo
 import { FlowReturnComponent } from './pages/flow-return/flow-return.component';
 import { PaymentResultComponent } from './pages/payment-result/payment-result.component';
 import { WinnerComponent } from './pages/winner/winner.component';
+import { TicketLookupComponent } from './pages/ticket-lookup/ticket-lookup.component';
 
 import { PurchaseModalComponent } from './shared/purchase-modal/purchase-modal.component';
 import { ToastComponent } from './shared/toast/toast.component';
@@ -25,6 +26,7 @@ import { ToastComponent } from './shared/toast/toast.component';
     FlowReturnComponent,
     PaymentResultComponent,
     WinnerComponent,
+    TicketLookupComponent,
     PurchaseModalComponent,
     ToastComponent
   ],

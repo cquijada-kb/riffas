@@ -11,6 +11,10 @@ export interface PublicRaffleDetail extends PublicRaffleCard {
   descripcion: string; limiteMaximoPorPersona: number; disponibles: number;
   drawAt?: string; status?: 'ACTIVA'|'CERRADA'|'FINALIZADA';
   images?: string[];
+  stickers?: string[];
+  subtitulo?: string;
+  condiciones?: string;
+  paquetes?: Array<{ cantidad: number; precio: number; etiqueta?: string }>;
 }
 export interface ReserveResponse {
   ok: boolean; reserveId: string; raffleId: string; quantity: number;
@@ -23,4 +27,26 @@ export interface PaymentResult {
 }
 export interface WinnerInfo {
   raffleId: string; raffleName: string; winnerNumber: number; winnerName?: string; drawAt: string;
+}
+export interface TicketLookupResult {
+  ok: boolean;
+  email: string;
+  total: number;
+  items: Array<{
+    ticketId: string;
+    raffleId: string;
+    raffleTitulo: string;
+    raffleImagen?: string;
+    stickers?: string[];
+    numero: number;
+    estado: 'VENDIDO' | 'POR_VERIFICAR' | 'DISPONIBLE';
+    compradorNombre: string;
+    compradorEmail: string;
+    flowOrderId?: string | null;
+    createdAt?: string | null;
+  }>;
+}
+export interface TicketLookupRequestResult {
+  ok: boolean;
+  message: string;
 }

@@ -107,3 +107,31 @@
   display: block;
 }
 
+.stickers-panel{
+  margin:16px 0;
+  padding:14px;
+  border-radius:14px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.stickers-panel .label{
+  display:block;
+  margin-bottom:10px;
+}
+
+.stickers-panel div{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.stickers-panel a{
+  border-radius:999px;
+  padding:7px 10px;
+  background:rgba(255,214,102,.14);
+  color:#ffd666;
+  font-size:.72rem;
+  font-weight:900;
+  text-decoration:none;
+}

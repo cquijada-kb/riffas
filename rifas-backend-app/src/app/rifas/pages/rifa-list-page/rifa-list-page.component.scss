@@ -452,6 +452,26 @@
   font-weight: 700;
 }
 
+.footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tickets-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #feddb5;
+  color: #281802;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+}
+
 .empty-state {
   min-height: 448px;
   display: grid;

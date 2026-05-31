@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -36,5 +36,24 @@ export class S3Service {
     );
 
     return `${this.publicUrl}/${key}`;
+  }
+
+  async getObjectByUrl(url: string) {
+    const key = this.extractKeyFromUrl(url);
+    return this.s3.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      }),
+    );
+  }
+
+  private extractKeyFromUrl(url: string): string {
+    if (url.startsWith(`${this.publicUrl}/`)) {
+      return decodeURIComponent(url.slice(this.publicUrl.length + 1));
+    }
+
+    const parsed = new URL(url);
+    return decodeURIComponent(parsed.pathname.replace(/^\/+/, ''));
   }
 }

@@ -6,6 +6,7 @@ import { RaffleDetailComponent } from './pages/raffle-detail/raffle-detail.compo
 import { PaymentResultComponent } from './pages/payment-result/payment-result.component';
 import { FlowReturnComponent } from './pages/flow-return/flow-return.component';
 import { WinnerComponent } from './pages/winner/winner.component';
+import { TicketLookupComponent } from './pages/ticket-lookup/ticket-lookup.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'rifas/:id', redirectTo: 'sorteos/:id', pathMatch: 'full' },
   { path: 'flow/retorno', component: FlowReturnComponent },
   { path: 'pago/resultado', component: PaymentResultComponent },
+  { path: 'consultar-stickers', component: TicketLookupComponent },
   { path: 'sorteos/:id/ganador', component: WinnerComponent },
   { path: 'rifas/:id/ganador', redirectTo: 'sorteos/:id/ganador', pathMatch: 'full' },
   { path: '**', redirectTo: '' },

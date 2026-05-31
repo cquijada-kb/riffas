@@ -16,8 +16,22 @@
 
         <div class="hero__actions">
           <button class="btn btn-primary" (click)="scrollToListado()">¡Participar Ahora!</button>
-          <button class="btn btn-ghost" (click)="scrollToListado()">Ver Detalles</button>
+          <button class="btn btn-ghost" routerLink="/consultar-stickers">Consultar Stickers</button>
         </div>
+
+        <form class="hero-lookup" (ngSubmit)="consultarStickers()">
+          <label for="stickerEmail">Consulta rápida de stickers</label>
+          <div>
+            <input
+              id="stickerEmail"
+              type="email"
+              name="stickerEmail"
+              placeholder="correo@ejemplo.com"
+              [(ngModel)]="stickerEmail"
+            />
+            <button type="submit">Consultar</button>
+          </div>
+        </form>
       </div>
     </div>
   </section>

@@ -58,6 +58,15 @@
         </div>
       </div>
 
+      <div class="stickers-panel" *ngIf="raffle.stickers?.length">
+        <span class="label">Stickers disponibles</span>
+        <div>
+          <a *ngFor="let sticker of raffle.stickers" [href]="sticker" target="_blank" rel="noreferrer">
+            Ver sticker
+          </a>
+        </div>
+      </div>
+
       <button class="btn btn-primary w100" type="button" (click)="openPurchase()">
         Comprar numeros
       </button>

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Rifa } from '../../models/rifa.model';
 import { RifasService } from '../../services/rifas.service';
@@ -26,6 +26,8 @@ export class RifaFormPageComponent implements OnInit {
 
   imagenesExistentes: string[] = [];
   imagenesNuevas: { file: File; preview: string }[] = [];
+  stickersExistentes: string[] = [];
+  stickersNuevos: { file: File; name: string; preview?: string }[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -36,11 +38,17 @@ export class RifaFormPageComponent implements OnInit {
     // Inicializamos el form dentro del constructor
     this.form = this.fb.group({
       titulo: ['', [Validators.required]],
+      subtitulo: [''],
       descripcionPremio: ['', [Validators.required]],
+      condiciones: [''],
       cantidadNumeros: [100, [Validators.required, Validators.min(1)]],
       precioPorNumero: [1000, [Validators.required, Validators.min(1)]],
       limitePorUsuario: [5, [Validators.required, Validators.min(1)]],
-      fechaCierre: [null]
+      fechaCierre: [null],
+      fechaInicioVenta: [null],
+      fechaTerminoVenta: [null],
+      fechaSorteo: [null],
+      paquetes: this.fb.array([])
     });
   }
 
@@ -62,17 +70,59 @@ export class RifaFormPageComponent implements OnInit {
         if (rifa) {
           this.form.patchValue({
             titulo: rifa.titulo,
+            subtitulo: rifa.subtitulo ?? '',
             descripcionPremio: rifa.descripcionPremio,
+            condiciones: rifa.condiciones ?? '',
             cantidadNumeros: rifa.cantidadNumeros,
             precioPorNumero: rifa.precioPorNumero,
             limitePorUsuario: rifa.limitePorUsuario,
-            fechaCierre: rifa.fechaCierre ? new Date(rifa.fechaCierre) : null
+            fechaCierre: rifa.fechaCierre ? new Date(rifa.fechaCierre) : null,
+            fechaInicioVenta: rifa.fechaInicioVenta ? new Date(rifa.fechaInicioVenta) : null,
+            fechaTerminoVenta: rifa.fechaTerminoVenta ? new Date(rifa.fechaTerminoVenta) : null,
+            fechaSorteo: rifa.fechaSorteo ? new Date(rifa.fechaSorteo) : null
           });
           this.imagenesExistentes = (rifa as any).imagenes ?? [];
+          this.stickersExistentes = (rifa as any).stickers ?? [];
+          this.setPackages(rifa.paquetes ?? []);
+        } else {
+          this.setPackages([
+            { cantidad: 1, precio: 1000, etiqueta: '1 sticker' },
+            { cantidad: 6, precio: 5000, etiqueta: '6 stickers' },
+            { cantidad: 13, precio: 10000, etiqueta: '13 stickers' }
+          ]);
         }
         this.loading = false;
       });
 
+  }
+
+  get paquetes(): FormArray {
+    return this.form.get('paquetes') as FormArray;
+  }
+
+  packageGroup(value?: { cantidad?: number; precio?: number; etiqueta?: string }): FormGroup {
+    return this.fb.group({
+      cantidad: [value?.cantidad ?? 1, [Validators.required, Validators.min(1)]],
+      precio: [value?.precio ?? 1000, [Validators.required, Validators.min(0)]],
+      etiqueta: [value?.etiqueta ?? '']
+    });
+  }
+
+  setPackages(packages: Array<{ cantidad: number; precio: number; etiqueta?: string }>): void {
+    this.paquetes.clear();
+    const safePackages = packages.length ? packages : [{ cantidad: 1, precio: this.form.get('precioPorNumero')?.value ?? 1000 }];
+    safePackages.forEach(pkg => this.paquetes.push(this.packageGroup(pkg)));
+  }
+
+  addPackage(): void {
+    this.paquetes.push(this.packageGroup());
+  }
+
+  removePackage(index: number): void {
+    if (this.paquetes.length <= 1) {
+      return;
+    }
+    this.paquetes.removeAt(index);
   }
 
   submit(): void {
@@ -86,18 +136,34 @@ export class RifaFormPageComponent implements OnInit {
     const formData = new FormData();
 
     formData.append('titulo', value.titulo);
+formData.append('subtitulo', value.subtitulo ?? '');
 formData.append('descripcion', value.descripcionPremio);
+formData.append('condiciones', value.condiciones ?? '');
 formData.append('totalTickets', String(value.cantidadNumeros));
 formData.append('precioTicket', String(value.precioPorNumero));
 formData.append('limitePorUsuario', String(value.limitePorUsuario));
+formData.append('paquetes', JSON.stringify(value.paquetes ?? []));
 
     if (value.fechaCierre) {
       formData.append('fechaCierre', value.fechaCierre.toISOString());
+    }
+    if (value.fechaInicioVenta) {
+      formData.append('fechaInicioVenta', value.fechaInicioVenta.toISOString());
+    }
+    if (value.fechaTerminoVenta) {
+      formData.append('fechaTerminoVenta', value.fechaTerminoVenta.toISOString());
+    }
+    if (value.fechaSorteo) {
+      formData.append('fechaSorteo', value.fechaSorteo.toISOString());
     }
 
     for (const img of this.imagenesNuevas) {
   formData.append('imagenes', img.file);
 }
+
+    for (const sticker of this.stickersNuevos) {
+      formData.append('stickers', sticker.file);
+    }
 
 
     // 👇 imágenes
@@ -167,6 +233,32 @@ formData.append('limitePorUsuario', String(value.limitePorUsuario));
 
   removeNewImage(index: number): void {
     this.imagenesNuevas.splice(index, 1);
+  }
+
+  onStickersSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+
+    this.stickersNuevos = [];
+    const files = Array.from(input.files).slice(0, 10);
+
+    for (const file of files) {
+      const item = { file, name: file.name, preview: undefined as string | undefined };
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          item.preview = reader.result as string;
+        };
+        reader.readAsDataURL(file);
+      }
+      this.stickersNuevos.push(item);
+    }
+
+    input.value = '';
+  }
+
+  removeSticker(index: number): void {
+    this.stickersNuevos.splice(index, 1);
   }
 
 }

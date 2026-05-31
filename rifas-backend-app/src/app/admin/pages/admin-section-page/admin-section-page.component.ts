@@ -2,12 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   AdminBuyerItem,
+  AdminBuyerDetail,
   AdminSystemUserItem,
   AdminUsersService,
   AdminUsersSummary,
   AdminWinnerItem
 } from '../../services/admin-users.service';
 import {
+  AdminPaymentDetail,
   AdminPaymentItem,
   AdminPaymentsService,
   AdminPaymentsSummary
@@ -44,6 +46,10 @@ export class AdminSectionPageComponent implements OnInit {
   buyers: AdminBuyerItem[] = [];
   winners: AdminWinnerItem[] = [];
   selectedUserView: 'sistema' | 'compradores' | 'ganadores' = 'sistema';
+  userSearch = '';
+  selectedBuyer?: AdminBuyerDetail;
+  selectedSystemUser?: AdminSystemUserItem;
+  buyerDetailLoading = false;
   paymentSummary = [
     {
       label: 'Volumen total (24h)',
@@ -61,7 +67,7 @@ export class AdminSectionPageComponent implements OnInit {
     },
     {
       label: 'Metodo predominante',
-      value: 'Crypto Ledger',
+      value: 'RIFFAS',
       detail: '',
       badge: '',
       tone: 'soft'
@@ -80,6 +86,8 @@ export class AdminSectionPageComponent implements OnInit {
     email: string;
     raffleTitle: string;
     quantity: string;
+    rawQuantity: number;
+    rawTicketText: string;
     statusKey: 'all' | 'success' | 'pending';
   }> = [];
   paymentSummaryData: AdminPaymentsSummary = {
@@ -108,6 +116,13 @@ export class AdminSectionPageComponent implements OnInit {
   usersTotalLabel = '0';
   paymentsTotalLabel = '0';
   selectedPaymentFilter: 'all' | 'success' | 'pending' = 'all';
+  paymentSearch = '';
+  selectedPayment?: AdminPaymentDetail;
+  paymentReference = '';
+  paymentReceiptUrl = '';
+  selectedReceiptFile?: File;
+  receiptUploading = false;
+  paymentDetailLoading = false;
   paymentPage = 1;
   readonly paymentPageSize = 10;
   selectedTraceFilter = 'Todos';
@@ -313,6 +328,8 @@ export class AdminSectionPageComponent implements OnInit {
       email: payment.compradorEmail,
       raffleTitle: payment.raffleTitulo,
       quantity: this.formatCount(payment.cantidadTickets),
+      rawQuantity: payment.cantidadTickets,
+      rawTicketText: payment.rawTicketText || (payment.numeros ?? []).join(', ') || `${payment.cantidadTickets}`,
       statusKey: payment.estado === 'Completado' ? 'success' as const : 'pending' as const
     };
   }
@@ -390,14 +407,14 @@ export class AdminSectionPageComponent implements OnInit {
 
   getUserViewCount(): string {
     if (this.selectedUserView === 'compradores') {
-      return this.formatCount(this.buyers.length);
+      return this.formatCount(this.filteredBuyers.length);
     }
 
     if (this.selectedUserView === 'ganadores') {
-      return this.formatCount(this.winners.length);
+      return this.formatCount(this.filteredWinners.length);
     }
 
-    return this.formatCount(this.systemUsers.length);
+    return this.formatCount(this.filteredSystemUsers.length);
   }
 
   getSystemUserRoleLabel(role: 'ADMIN' | 'CLIENTE'): string {
@@ -406,6 +423,103 @@ export class AdminSectionPageComponent implements OnInit {
 
   getWinnerDateLabel(value?: string | null): string {
     return this.formatDate(value);
+  }
+
+  get filteredSystemUsers(): AdminSystemUserItem[] {
+    const query = this.userSearch.toLowerCase().trim();
+    if (!query) return this.systemUsers;
+
+    return this.systemUsers.filter(user =>
+      [user.nombre, user.email, user.rol, user.estado]
+        .some(value => String(value ?? '').toLowerCase().includes(query))
+    );
+  }
+
+  get filteredBuyers(): AdminBuyerItem[] {
+    const query = this.userSearch.toLowerCase().trim();
+    if (!query) return this.buyers;
+
+    return this.buyers.filter(buyer =>
+      [
+        buyer.nombre,
+        buyer.email,
+        buyer.telefono,
+        buyer.rut,
+        buyer.ciudad,
+        buyer.estado,
+        buyer.ticketsComprados,
+        buyer.rifasParticipadas
+      ]
+        .some(value => String(value ?? '').toLowerCase().includes(query))
+    );
+  }
+
+  get filteredWinners(): AdminWinnerItem[] {
+    const query = this.userSearch.toLowerCase().trim();
+    if (!query) return this.winners;
+
+    return this.winners.filter(winner =>
+      [winner.nombre, winner.email, winner.raffleTitulo, winner.numero, winner.codigoVerificacion]
+        .some(value => String(value ?? '').toLowerCase().includes(query))
+    );
+  }
+
+  viewBuyerDetail(buyer: AdminBuyerItem): void {
+    this.selectedSystemUser = undefined;
+    this.buyerDetailLoading = true;
+    this.adminUsersService.getBuyerDetail(buyer.email).subscribe({
+      next: detail => {
+        this.selectedBuyer = detail;
+        this.buyerDetailLoading = false;
+      },
+      error: () => {
+        this.selectedBuyer = undefined;
+        this.buyerDetailLoading = false;
+      }
+    });
+  }
+
+  closeBuyerDetail(): void {
+    this.selectedBuyer = undefined;
+    this.selectedSystemUser = undefined;
+  }
+
+  viewSystemUserDetail(user: AdminSystemUserItem): void {
+    this.selectedBuyer = undefined;
+    this.selectedSystemUser = user;
+  }
+
+  exportUsersReport(): void {
+    const generatedAt = new Date();
+    const title = this.getUserExportTitle();
+    const headers = this.getUserExportHeaders();
+    const rows = this.getUserExportRows();
+
+    if (!rows.length) return;
+
+    const html = `
+      <html>
+        <head><meta charset="utf-8" /></head>
+        <body>
+          <table border="1">
+            <tr><th colspan="${headers.length}">${this.escapeHtml(title)}</th></tr>
+            <tr><td colspan="${headers.length}">Generado: ${this.formatDateTimeForExport(generatedAt)}</td></tr>
+            <tr>${headers.map(header => `<th>${this.escapeHtml(header)}</th>`).join('')}</tr>
+            ${rows
+              .map(row => `<tr>${row.map(value => `<td>${this.escapeHtml(String(value ?? ''))}</td>`).join('')}</tr>`)
+              .join('')}
+          </table>
+        </body>
+      </html>
+    `;
+
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${title.toLowerCase().replace(/\s+/g, '-')}-${this.buildExportDateStamp(generatedAt)}.xls`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   toggleTraceHistory(): void {
@@ -438,11 +552,25 @@ export class AdminSectionPageComponent implements OnInit {
   }
 
   get filteredPayments() {
-    if (this.selectedPaymentFilter === 'all') {
-      return this.payments;
+    const byStatus = this.selectedPaymentFilter === 'all'
+      ? this.payments
+      : this.payments.filter(payment => payment.statusKey === this.selectedPaymentFilter);
+
+    const query = this.paymentSearch.toLowerCase().trim();
+    if (!query) {
+      return byStatus;
     }
 
-    return this.payments.filter(payment => payment.statusKey === this.selectedPaymentFilter);
+    return byStatus.filter(payment => {
+      return [
+        payment.name,
+        payment.email,
+        payment.raffleTitle,
+        payment.rawTicketText,
+        payment.id,
+        payment.status
+      ].some(value => String(value ?? '').toLowerCase().includes(query));
+    });
   }
 
   get paginatedPayments() {
@@ -468,6 +596,75 @@ export class AdminSectionPageComponent implements OnInit {
     if (this.paymentPage < this.paymentTotalPages) {
       this.paymentPage += 1;
     }
+  }
+
+  viewPaymentDetail(payment: { id: string }): void {
+    this.paymentDetailLoading = true;
+    this.adminPaymentsService.getPaymentDetail(payment.id).subscribe({
+      next: detail => {
+        this.selectedPayment = detail;
+        this.paymentReference = detail.referenciaPago ?? '';
+        this.paymentReceiptUrl = detail.comprobanteUrl ?? '';
+        this.paymentDetailLoading = false;
+      },
+      error: () => {
+        this.selectedPayment = undefined;
+        this.paymentDetailLoading = false;
+      }
+    });
+  }
+
+  closePaymentDetail(): void {
+    this.selectedPayment = undefined;
+    this.paymentReference = '';
+    this.paymentReceiptUrl = '';
+    this.selectedReceiptFile = undefined;
+    this.receiptUploading = false;
+  }
+
+  selectReceiptFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedReceiptFile = input.files?.[0] ?? undefined;
+  }
+
+  uploadSelectedReceipt(): void {
+    if (!this.selectedPayment || !this.selectedReceiptFile) return;
+
+    this.receiptUploading = true;
+    this.adminPaymentsService.uploadReceipt(this.selectedPayment.id, this.selectedReceiptFile).subscribe({
+      next: detail => {
+        this.selectedPayment = detail;
+        this.paymentReceiptUrl = detail.comprobanteUrl ?? '';
+        this.selectedReceiptFile = undefined;
+        this.receiptUploading = false;
+        this.loadPayments();
+      },
+      error: () => {
+        this.receiptUploading = false;
+      }
+    });
+  }
+
+  confirmSelectedPayment(): void {
+    if (!this.selectedPayment) return;
+    this.adminPaymentsService.confirmPayment(this.selectedPayment.id, this.paymentReference, this.paymentReceiptUrl).subscribe({
+      next: detail => {
+        this.selectedPayment = detail;
+        this.paymentReference = detail.referenciaPago ?? '';
+        this.paymentReceiptUrl = detail.comprobanteUrl ?? '';
+        this.loadPayments();
+      }
+    });
+  }
+
+  rejectSelectedPayment(): void {
+    if (!this.selectedPayment) return;
+    this.adminPaymentsService.rejectPayment(this.selectedPayment.id).subscribe({
+      next: () => {
+        this.closePaymentDetail();
+        this.loadPayments();
+      }
+    });
   }
 
   exportPaymentsReport(): void {
@@ -542,6 +739,61 @@ export class AdminSectionPageComponent implements OnInit {
     }
 
     return 'account_balance';
+  }
+
+  private getUserExportTitle(): string {
+    if (this.selectedUserView === 'compradores') return 'Reporte de Compradores';
+    if (this.selectedUserView === 'ganadores') return 'Reporte de Ganadores';
+    return 'Reporte de Usuarios';
+  }
+
+  private getUserExportHeaders(): string[] {
+    if (this.selectedUserView === 'compradores') {
+      return ['Nombre', 'Correo', 'Telefono', 'RUT', 'Ciudad', 'Tickets', 'Rifas', 'Monto total', 'Estado', 'Ultima compra'];
+    }
+
+    if (this.selectedUserView === 'ganadores') {
+      return ['Nombre', 'Correo', 'Sorteo', 'Numero ganador', 'Fecha sorteo', 'Verificacion'];
+    }
+
+    return ['Nombre', 'Correo', 'Rol', 'Estado', 'Registro', 'Ultima actividad'];
+  }
+
+  private getUserExportRows(): Array<Array<string | number>> {
+    if (this.selectedUserView === 'compradores') {
+      return this.filteredBuyers.map(buyer => [
+        buyer.nombre,
+        buyer.email,
+        buyer.telefono || '',
+        buyer.rut || '',
+        buyer.ciudad || '',
+        buyer.ticketsComprados,
+        buyer.rifasParticipadas,
+        this.formatCurrency(buyer.montoTotal),
+        buyer.estado,
+        this.formatDate(buyer.updatedAt)
+      ]);
+    }
+
+    if (this.selectedUserView === 'ganadores') {
+      return this.filteredWinners.map(winner => [
+        winner.nombre,
+        winner.email,
+        winner.raffleTitulo,
+        winner.numero,
+        this.formatDate(winner.fechaSorteo),
+        winner.codigoVerificacion || ''
+      ]);
+    }
+
+    return this.filteredSystemUsers.map(user => [
+      user.nombre,
+      user.email,
+      this.getSystemUserRoleLabel(user.rol),
+      user.estado,
+      this.formatDate(user.createdAt),
+      this.formatDate(user.updatedAt)
+    ]);
   }
 
   private formatDateTimeForExport(value: Date): string {

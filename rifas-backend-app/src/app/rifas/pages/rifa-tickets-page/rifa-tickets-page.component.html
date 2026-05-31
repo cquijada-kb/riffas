@@ -1,0 +1,123 @@
+<section class="tickets-page">
+  <header class="tickets-header">
+    <div>
+      <p class="eyebrow">Tickets del sorteo</p>
+      <h2>{{ data?.raffle?.titulo || 'Cargando tickets' }}</h2>
+      <p>Listado de tickets vendidos, por verificar y disponibles.</p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" mat-stroked-button (click)="volver()">Volver</button>
+      <button type="button" mat-flat-button color="primary" (click)="exportExcel()" [disabled]="!items.length">
+        Descargar Excel
+      </button>
+      <button type="button" mat-stroked-button (click)="printPdf()" [disabled]="!items.length">
+        Descargar PDF
+      </button>
+    </div>
+  </header>
+
+  <section class="summary-grid" *ngIf="data">
+    <article>
+      <span>Total</span>
+      <strong>{{ data.summary.total }}</strong>
+    </article>
+    <article>
+      <span>Vendidos</span>
+      <strong>{{ data.summary.vendidos }}</strong>
+    </article>
+    <article>
+      <span>Por verificar</span>
+      <strong>{{ data.summary.porVerificar }}</strong>
+    </article>
+    <article>
+      <span>Disponibles</span>
+      <strong>{{ data.summary.disponibles }}</strong>
+    </article>
+  </section>
+
+  <section class="filters-card">
+    <div class="status-tabs">
+      <button
+        type="button"
+        *ngFor="let option of filters"
+        [class.active]="filter === option.value"
+        (click)="setFilter(option.value)"
+      >
+        {{ option.label }}
+      </button>
+    </div>
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar por ticket, comprador, correo, telefono o RUT</mat-label>
+      <input matInput [(ngModel)]="query" />
+    </mat-form-field>
+  </section>
+
+  <section class="tickets-board-card">
+    <div class="board-head">
+      <strong>Mapa de tickets</strong>
+      <div class="legend">
+        <span><i class="sold"></i> Vendido</span>
+        <span><i class="pending"></i> Por verificar</span>
+        <span><i class="available"></i> Disponible</span>
+      </div>
+    </div>
+
+    <div class="loading" *ngIf="loading">Cargando tickets...</div>
+
+    <div class="board-wrap" *ngIf="!loading && items.length">
+      <button
+        type="button"
+        class="ticket-box"
+        *ngFor="let item of items"
+        [class.sold]="item.estado === 'VENDIDO'"
+        [class.pending]="item.estado === 'POR_VERIFICAR'"
+        [class.available]="item.estado === 'DISPONIBLE'"
+        [class.selected]="selectedTicket?.numero === item.numero"
+        (click)="selectTicket(item)"
+        [title]="statusLabel(item.estado)"
+      >
+        {{ ticketNumber(item.numero) }}
+      </button>
+    </div>
+
+    <div class="empty-board" *ngIf="!loading && !items.length">
+      No hay tickets para este filtro.
+    </div>
+  </section>
+
+  <section class="ticket-detail-card" *ngIf="selectedTicket as ticket">
+    <div>
+      <p class="eyebrow">Detalle del ticket</p>
+      <h3>#{{ ticketNumber(ticket.numero) }}</h3>
+    </div>
+
+    <div class="ticket-detail-grid">
+      <article>
+        <span>Estado</span>
+        <strong>{{ statusLabel(ticket.estado) }}</strong>
+      </article>
+      <article>
+        <span>Comprador</span>
+        <strong>{{ ticket.compradorNombre || '-' }}</strong>
+      </article>
+      <article>
+        <span>Correo</span>
+        <strong>{{ ticket.compradorEmail || '-' }}</strong>
+      </article>
+      <article>
+        <span>Telefono</span>
+        <strong>{{ ticket.compradorTelefono || '-' }}</strong>
+      </article>
+      <article>
+        <span>RUT</span>
+        <strong>{{ ticket.compradorRut || '-' }}</strong>
+      </article>
+      <article>
+        <span>Ciudad</span>
+        <strong>{{ ticket.compradorCiudad || '-' }}</strong>
+      </article>
+    </div>
+  </section>
+</section>

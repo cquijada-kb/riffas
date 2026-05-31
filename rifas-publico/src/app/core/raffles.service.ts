@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { PublicRaffleCard, PublicRaffleDetail, ReserveResponse, CreatePaymentResponse, PaymentResult, WinnerInfo } from './models';
+import { PublicRaffleCard, PublicRaffleDetail, ReserveResponse, CreatePaymentResponse, PaymentResult, WinnerInfo, TicketLookupRequestResult, TicketLookupResult } from './models';
 import { map } from 'rxjs/operators';
 
 type RaffleApiDto = {
@@ -17,6 +17,10 @@ type RaffleApiDto = {
   fechaSorteo: string | null;
   estado: string;
   imagenes: string[];
+  stickers?: string[];
+  subtitulo?: string;
+  condiciones?: string;
+  paquetes?: Array<{ cantidad: number; precio: number; etiqueta?: string }>;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -63,7 +67,9 @@ export class RafflesService {
     return {
       id: dto._id,
       nombre: dto.titulo,
+      subtitulo: dto.subtitulo,
       descripcion: dto.descripcion,
+      condiciones: dto.condiciones,
 
       precioNumero: dto.precioTicket,
       totalNumeros: total,
@@ -78,6 +84,8 @@ export class RafflesService {
 
       imageUrl: dto.imagenes?.[0] || '',
       images: (dto.imagenes || []).slice(0, 3),
+      stickers: dto.stickers || [],
+      paquetes: dto.paquetes || [],
 
       agotada: vendidos >= total || dto.estado !== 'ACTIVA',
       badge: undefined,
@@ -122,10 +130,64 @@ export class RafflesService {
     return this.http.get<WinnerInfo>(`${environment.apiBaseUrl}/public/raffles/${raffleId}/winner`);
   }
 
-  purchase(raffleId: string, cantidad: number, compradorNombre: string, compradorEmail: string) {
+  requestTicketLookup(email: string) {
+    return this.http.post<TicketLookupRequestResult>(
+      `${environment.apiBaseUrl}/public/tickets/lookup/request`,
+      { email }
+    );
+  }
+
+  lookupTicketsByToken(token: string) {
+    return this.http.get<TicketLookupResult>(
+      `${environment.apiBaseUrl}/public/tickets/lookup?token=${encodeURIComponent(token)}`
+    );
+  }
+
+  purchase(
+    raffleId: string,
+    cantidad: number,
+    compradorNombre: string,
+    compradorEmail: string,
+    extra?: {
+      compradorTelefono?: string;
+      compradorRut?: string;
+      compradorCiudad?: string;
+      paqueteId?: string;
+    }
+  ) {
     return this.http.post(
       `${environment.apiBaseUrl}/public/raffles/${raffleId}/purchase`,
-      { compradorNombre, compradorEmail, cantidad }
+      { compradorNombre, compradorEmail, cantidad, ...(extra || {}) }
+    );
+  }
+
+  manualPurchase(
+    raffleId: string,
+    payload: {
+      cantidad: number;
+      compradorNombre: string;
+      compradorEmail: string;
+      compradorTelefono?: string;
+      compradorRut?: string;
+      compradorCiudad?: string;
+      paqueteId?: string;
+    },
+    comprobante?: File,
+  ) {
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
+    if (comprobante) {
+      formData.append('comprobante', comprobante);
+    }
+
+    return this.http.post(
+      `${environment.apiBaseUrl}/public/raffles/${raffleId}/manual-purchase`,
+      formData,
     );
   }
 

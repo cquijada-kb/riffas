@@ -12,7 +12,12 @@ import {
 import { RafflesService } from './raffles.service';
 import { CreateRaffleDto } from './dto/create-raffle.dto';
 import { UpdateRaffleDto } from './dto/update-raffle.dto';
-import { ImagesInterceptor } from './interceptors/images.interceptor';
+import { RaffleFilesInterceptor } from './interceptors/raffle-files.interceptor';
+
+type RaffleUploadedFiles = {
+  imagenes?: Express.Multer.File[];
+  stickers?: Express.Multer.File[];
+};
 
 @Controller()
 export class RafflesController {
@@ -41,19 +46,25 @@ export class RafflesController {
   }
 
   @Post('admin/raffles')
-  @UseInterceptors(ImagesInterceptor)
+  @UseInterceptors(RaffleFilesInterceptor)
   create(
     @Body() body: any,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files: RaffleUploadedFiles,
   ) {
     // body viene como strings porque es multipart/form-data
     const dto: CreateRaffleDto = {
       titulo: body.titulo,
+      subtitulo: body.subtitulo,
       descripcion: body.descripcion,
+      condiciones: body.condiciones,
       totalTickets: Number(body.totalTickets),
       precioTicket: Number(body.precioTicket),
       limitePorUsuario: Number(body.limitePorUsuario),
       fechaCierre: body.fechaCierre ? new Date(body.fechaCierre) : null,
+      fechaInicioVenta: body.fechaInicioVenta ? new Date(body.fechaInicioVenta) : null,
+      fechaTerminoVenta: body.fechaTerminoVenta ? new Date(body.fechaTerminoVenta) : null,
+      fechaSorteo: body.fechaSorteo ? new Date(body.fechaSorteo) : null,
+      paquetes: this.parsePackages(body.paquetes),
       // imagenes se agregan en el service luego de subir a S3
     } as any;
 
@@ -61,20 +72,25 @@ export class RafflesController {
   }
 
   @Put('admin/raffles/:id')
-  @UseInterceptors(ImagesInterceptor)
+  @UseInterceptors(RaffleFilesInterceptor)
   update(
     @Param('id') id: string,
     @Body() body: any,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files: RaffleUploadedFiles,
   ) {
-    console.log('aqui,,,,,,,,,,,,,,')
     const dto: UpdateRaffleDto = {
       titulo: body.titulo,
+      subtitulo: body.subtitulo,
       descripcion: body.descripcion,
+      condiciones: body.condiciones,
       totalTickets: body.totalTickets ? Number(body.totalTickets) : undefined,
       precioTicket: body.precioTicket ? Number(body.precioTicket) : undefined,
       limitePorUsuario: body.limitePorUsuario ? Number(body.limitePorUsuario) : undefined,
       fechaCierre: body.fechaCierre ? new Date(body.fechaCierre) : undefined,
+      fechaInicioVenta: body.fechaInicioVenta ? new Date(body.fechaInicioVenta) : undefined,
+      fechaTerminoVenta: body.fechaTerminoVenta ? new Date(body.fechaTerminoVenta) : undefined,
+      fechaSorteo: body.fechaSorteo ? new Date(body.fechaSorteo) : undefined,
+      paquetes: body.paquetes !== undefined ? this.parsePackages(body.paquetes) : undefined,
     } as any;
 
     return this.rafflesService.update(id, dto, files);
@@ -104,6 +120,25 @@ export class RafflesController {
   @Patch('admin/raffles/:id/abrir')
   abrir(@Param('id') id: string) {
     return this.rafflesService.abrir(id);
+  }
+
+  private parsePackages(value: unknown) {
+    if (!value) return [];
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value !== 'string') {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   }
 
 }

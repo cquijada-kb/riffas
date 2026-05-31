@@ -154,6 +154,10 @@ export class RifaListPageComponent implements OnInit {
     this.router.navigate(['/rifas', rifa.id]);
   }
 
+  verTickets(rifa: Rifa): void {
+    this.router.navigate(['/rifas', rifa.id, 'tickets']);
+  }
+
   editarRifa(rifa: Rifa): void {
     this.router.navigate(['/rifas/editar', rifa.id]);
   }

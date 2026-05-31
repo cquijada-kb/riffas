@@ -1,0 +1,261 @@
+.lookup-page {
+  min-height: calc(100vh - 82px);
+  background: #071421;
+}
+
+.lookup-hero {
+  min-height: calc(100vh - 82px);
+  display: flex;
+  align-items: flex-start;
+  padding: 120px 0 96px;
+  background:
+    radial-gradient(circle at 76% 20%, rgba(255, 214, 102, .10), transparent 26%),
+    linear-gradient(135deg, #071421 0%, #0a1a2b 52%, #071421 100%);
+  color: #fff;
+}
+
+.lookup-hero span {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, .66);
+}
+
+.lookup-hero h1 {
+  max-width: 760px;
+  margin: 12px 0;
+  font-size: 5rem;
+  line-height: .95;
+}
+
+.lookup-hero p {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(255, 255, 255, .78);
+}
+
+.lookup-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  max-width: 700px;
+  margin-top: 28px;
+  padding: 8px;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.lookup-box input {
+  min-height: 50px;
+  border: 0;
+  padding: 0 14px;
+  font: inherit;
+  outline: 0;
+}
+
+.lookup-box input:disabled {
+  color: #071421;
+  opacity: .72;
+}
+
+.lookup-box button,
+.result-head button {
+  min-height: 50px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 18px;
+  background: #ffd666;
+  color: #071421;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.lookup-box button:disabled,
+.result-head button:disabled {
+  cursor: not-allowed;
+  opacity: .72;
+}
+
+.lookup-box.is-loading {
+  pointer-events: none;
+}
+
+.lookup-message {
+  max-width: 700px;
+  margin-top: 14px;
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 214, 102, .14);
+  color: #fff;
+  font-weight: 900;
+}
+
+.lookup-message.error {
+  background: rgba(248, 113, 113, .16);
+  color: #fecaca;
+}
+
+.result-section {
+  background: #f5f7fb;
+  min-height: calc(100vh - 82px);
+  padding: 56px 24px 80px;
+}
+
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.result-head h2 {
+  margin: 0;
+  color: #071421;
+}
+
+.result-head p {
+  margin: 4px 0 0;
+  color: #657184;
+}
+
+.tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.print-title {
+  display: none;
+}
+
+.ticket-card,
+.empty-state {
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(13, 28, 46, .06);
+}
+
+.ticket-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.ticket-card > img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #edf2f8;
+}
+
+.ticket-card span {
+  color: #657184;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ticket-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #071421;
+  font-size: 34px;
+}
+
+.ticket-card p,
+.ticket-card small {
+  margin: 0;
+  color: #657184;
+}
+
+.ticket-card em {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 900;
+  background: #edf2f8;
+}
+
+.ticket-card em.vendido {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.ticket-card em.por_verificar {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.sticker-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sticker-strip a {
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: #e0f2fe;
+  color: #075985;
+  font-size: 11px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.empty-state {
+  padding: 24px;
+  color: #657184;
+}
+
+@media (max-width: 720px) {
+  .lookup-hero {
+    padding: 72px 0;
+  }
+
+  .lookup-hero h1 {
+    font-size: 3rem;
+  }
+
+  .lookup-box,
+  .result-head {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+}
+
+@media print {
+  .topbar,
+  .lookup-hero,
+  .result-head button {
+    display: none !important;
+  }
+
+  .lookup-page {
+    background: #fff;
+  }
+
+  .result-section {
+    padding: 0;
+  }
+
+  .print-title {
+    display: block;
+    margin-bottom: 18px;
+    color: #071421;
+  }
+
+  .tickets-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ticket-card {
+    box-shadow: none;
+    border: 1px solid #d9e2ef;
+    break-inside: avoid;
+  }
+}

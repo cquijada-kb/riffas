@@ -169,6 +169,15 @@
   align-items: center;
 }
 
+.payment-search {
+  min-height: 40px;
+  width: min(320px, 42vw);
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  padding: 0 12px;
+  font: inherit;
+}
+
 .toolbar-actions button,
 .payments-filters button,
 .timeline-filters button,
@@ -302,6 +311,143 @@ td {
   border-radius: 10px;
   background: transparent;
   color: #74777d;
+}
+
+.detail-button {
+  min-height: 34px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background: #fff;
+  color: #041627;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.payment-detail-card {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(13, 28, 46, 0.06);
+}
+
+.detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  p {
+    margin: 0 0 6px;
+    color: #74777d;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    font-weight: 900;
+  }
+
+  h3 {
+    margin: 0;
+    color: #041627;
+    font-size: 1.6rem;
+  }
+
+  button {
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    min-height: 38px;
+    padding: 0 14px;
+    background: #fff;
+    cursor: pointer;
+  }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+
+  article {
+    display: grid;
+    gap: 5px;
+    padding: 16px;
+    border-radius: 14px;
+    background: #f7f9fd;
+  }
+
+  span {
+    color: #74777d;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-weight: 900;
+  }
+
+  strong {
+    color: #041627;
+  }
+
+  small {
+    color: #74777d;
+  }
+}
+
+.receipt-box,
+.manual-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed #cbd7e8;
+  border-radius: 14px;
+}
+
+.receipt-box span {
+  display: block;
+  color: #74777d;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 900;
+}
+
+.receipt-box strong {
+  display: block;
+  margin-top: 4px;
+  color: #041627;
+}
+
+.manual-actions {
+  justify-content: flex-end;
+
+  input {
+    flex: 1;
+    min-height: 40px;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    padding: 0 12px;
+    font: inherit;
+  }
+
+  button {
+    min-height: 40px;
+    border: 0;
+    border-radius: 12px;
+    padding: 0 14px;
+    color: #fff;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .confirm {
+    background: #006d37;
+  }
+
+  .reject {
+    background: #ba1a1a;
+  }
 }
 
 .users-pagination {

@@ -11,11 +11,15 @@ export class MailService {
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT ?? 587),
       secure: process.env.SMTP_SECURE === 'true',
+      family: 4,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-    });
+    } as any);
   }
 
   async sendPaymentConfirmation(options: {
@@ -130,6 +134,59 @@ Equipo Rifas
       this.logger.log(`Correo de ganador enviado: ${info.messageId}`);
     } catch (err) {
       this.logger.error('Error enviando correo de ganador', err);
+    }
+  }
+
+  async sendTicketLookupVerification(options: {
+    to: string;
+    verificationUrl: string;
+    expiresMinutes: number;
+  }) {
+    const from =
+      process.env.MAIL_FROM ?? '"Rifas" <no-reply@rifas-demo.local>';
+
+    const subject = 'Verifica tu correo para consultar tus stickers';
+    const html = `
+      <p>Hola,</p>
+      <p>Recibimos una solicitud para consultar los tickets/stickers asociados a este correo.</p>
+      <p>
+        <a href="${options.verificationUrl}" style="display:inline-block;padding:12px 18px;background:#ffd666;color:#071421;text-decoration:none;font-weight:700;border-radius:8px;">
+          Ver mis stickers
+        </a>
+      </p>
+      <p>Este link vence en ${options.expiresMinutes} minutos.</p>
+      <p>Si no solicitaste esta consulta, puedes ignorar este correo.</p>
+      <p>Saludos,<br/>Equipo Rifas</p>
+    `;
+
+    const text = `Hola,
+
+Recibimos una solicitud para consultar los tickets/stickers asociados a este correo.
+
+Abre este link para ver tus stickers:
+${options.verificationUrl}
+
+Este link vence en ${options.expiresMinutes} minutos.
+
+Si no solicitaste esta consulta, puedes ignorar este correo.
+
+Saludos,
+Equipo Rifas
+`;
+
+    try {
+      const info = await this.transporter.sendMail({
+        from,
+        to: options.to,
+        subject,
+        text,
+        html,
+      });
+
+      this.logger.log(`Correo de verificacion de stickers enviado: ${info.messageId}`);
+    } catch (err) {
+      this.logger.error('Error enviando correo de verificacion de stickers', err);
+      throw err;
     }
   }
 }

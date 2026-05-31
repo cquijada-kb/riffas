@@ -1,0 +1,74 @@
+<main class="lookup-page">
+  <section class="lookup-hero" *ngIf="!result">
+    <div class="container">
+      <span>Consulta de stickers</span>
+      <h1>Encuentra tus tickets por correo</h1>
+      <p>Ingresa el correo usado en la compra. Te enviaremos un link seguro para verificar que eres el titular y ver tus stickers.</p>
+
+      <div class="lookup-box" [class.is-loading]="loading">
+        <input
+          type="email"
+          placeholder="correo@ejemplo.com"
+          [(ngModel)]="email"
+          (keyup.enter)="search()"
+          [disabled]="loading"
+        />
+        <button type="button" (click)="search()" [disabled]="loading">
+          {{ loading ? 'Enviando...' : 'Enviar link de verificacion' }}
+        </button>
+      </div>
+
+      <div class="lookup-message" *ngIf="requested">
+        {{ message || 'Revisa tu correo y abre el link de verificacion.' }}
+      </div>
+
+      <div class="lookup-message error" *ngIf="message && !requested && !loading">
+        {{ message }}
+      </div>
+
+      <div class="lookup-message" *ngIf="verifying">
+        Verificando link...
+      </div>
+    </div>
+  </section>
+
+  <section class="container result-section" *ngIf="result">
+    <div class="result-head">
+      <div>
+        <h2>{{ result.total }} ticket{{ result.total === 1 ? '' : 's' }} encontrados</h2>
+        <p>{{ result.email }}</p>
+      </div>
+      <button type="button" (click)="printPdf()" [disabled]="!result.items.length">Descargar PDF</button>
+    </div>
+
+    <div class="print-title">
+      <h2>Comprobante de stickers</h2>
+      <p>{{ result.email }}</p>
+    </div>
+
+    <div class="tickets-grid" *ngIf="result.items.length; else emptyState">
+      <article class="ticket-card" *ngFor="let item of result.items">
+        <img *ngIf="item.raffleImagen" [src]="item.raffleImagen" [alt]="item.raffleTitulo" />
+        <div>
+          <span>{{ item.raffleTitulo }}</span>
+          <strong>#{{ ticketNumber(item.numero) }}</strong>
+        </div>
+        <p>{{ item.compradorNombre }}</p>
+        <small>{{ item.createdAt | date:'short' }}</small>
+        <div class="sticker-strip" *ngIf="item.stickers?.length">
+          <a *ngFor="let sticker of item.stickers" [href]="sticker" target="_blank" rel="noreferrer">
+            Sticker
+          </a>
+        </div>
+        <em [class]="item.estado.toLowerCase()">{{ statusLabel(item.estado) }}</em>
+      </article>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        No encontramos tickets asociados a este correo.
+      </div>
+    </ng-template>
+  </section>
+</main>
+<app-toast></app-toast>

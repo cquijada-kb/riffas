@@ -37,8 +37,18 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Subtitulo</mat-label>
+            <input matInput formControlName="subtitulo" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width editorial-field">
             <mat-label>Descripcion del premio</mat-label>
             <textarea matInput rows="4" formControlName="descripcionPremio"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Condiciones o bases legales</mat-label>
+            <textarea matInput rows="4" formControlName="condiciones"></textarea>
           </mat-form-field>
         </div>
       </article>
@@ -80,6 +90,96 @@
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Inicio de venta</mat-label>
+            <input matInput [matDatepicker]="inicioVentaPicker" formControlName="fechaInicioVenta" />
+            <mat-datepicker-toggle matSuffix [for]="inicioVentaPicker"></mat-datepicker-toggle>
+            <mat-datepicker #inicioVentaPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width editorial-field">
+            <mat-label>Termino de venta</mat-label>
+            <input matInput [matDatepicker]="terminoVentaPicker" formControlName="fechaTerminoVenta" />
+            <mat-datepicker-toggle matSuffix [for]="terminoVentaPicker"></mat-datepicker-toggle>
+            <mat-datepicker #terminoVentaPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width editorial-field">
+          <mat-label>Fecha de sorteo</mat-label>
+          <input matInput [matDatepicker]="sorteoPicker" formControlName="fechaSorteo" />
+          <mat-datepicker-toggle matSuffix [for]="sorteoPicker"></mat-datepicker-toggle>
+          <mat-datepicker #sorteoPicker></mat-datepicker>
+        </mat-form-field>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-head split">
+          <div>
+            <p class="eyebrow">Stickers y paquetes</p>
+            <h3>Opciones de venta</h3>
+          </div>
+          <button mat-stroked-button type="button" (click)="addPackage()">
+            <span class="material-symbols-outlined">add</span>
+            Agregar opcion
+          </button>
+        </div>
+
+        <div class="packages-list" formArrayName="paquetes">
+          <div class="package-row" *ngFor="let pkg of paquetes.controls; let i = index" [formGroupName]="i">
+            <mat-form-field appearance="outline" class="editorial-field">
+              <mat-label>Cantidad</mat-label>
+              <input matInput type="number" formControlName="cantidad" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="editorial-field">
+              <mat-label>Precio paquete</mat-label>
+              <input matInput type="number" formControlName="precio" />
+              <span matTextPrefix>$&nbsp;</span>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="editorial-field">
+              <mat-label>Etiqueta</mat-label>
+              <input matInput formControlName="etiqueta" />
+            </mat-form-field>
+
+            <button mat-icon-button type="button" (click)="removePackage(i)" [disabled]="paquetes.length <= 1">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+
+        <p class="panel-copy">
+          Estos paquetes aparecen en la compra publica, por ejemplo 1 por 1000, 6 por 5000 o 13 por 10000.
+        </p>
+
+        <label class="upload-card">
+          <span class="material-symbols-outlined">attach_file</span>
+          <div>
+            <strong>Adjuntar stickers</strong>
+            <p>Sube imagenes o PDF asociados al sorteo. Maximo 10 archivos.</p>
+          </div>
+          <input type="file" accept="image/*,.pdf,application/pdf" multiple (change)="onStickersSelected($event)" />
+        </label>
+
+        <div *ngIf="stickersExistentes.length > 0" class="file-list">
+          <a class="file-pill" *ngFor="let url of stickersExistentes" [href]="url" target="_blank" rel="noreferrer">
+            <span class="material-symbols-outlined">description</span>
+            Sticker existente
+          </a>
+        </div>
+
+        <div *ngIf="stickersNuevos.length > 0" class="file-list">
+          <div class="file-pill" *ngFor="let sticker of stickersNuevos; let i = index">
+            <span class="material-symbols-outlined">{{ sticker.preview ? 'image' : 'picture_as_pdf' }}</span>
+            <strong>{{ sticker.name }}</strong>
+            <button type="button" (click)="removeSticker(i)">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
         </div>
       </article>
 

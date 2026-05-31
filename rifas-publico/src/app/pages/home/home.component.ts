@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RafflesService } from '../../core/raffles.service';
 import { PublicRaffleCard } from '../../core/models';
+import { ToastService } from '../../shared/toast/toast.service';
 
 type SortBy = 'recent'|'sold'|'ending'|'priceAsc';
 
@@ -21,6 +22,8 @@ type Testimonial = {
 export class HomeComponent implements OnInit {
   loading = true;
   q = '';
+  stickerEmail = '';
+  private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   sortBy: SortBy = 'recent';
   raffles: PublicRaffleCard[] = [];
   filtered: PublicRaffleCard[] = [];
@@ -70,9 +73,23 @@ export class HomeComponent implements OnInit {
     'Soporte VIP 24/7'
   ];
 
-  constructor(private api: RafflesService, private router: Router){}
+  constructor(
+    private api: RafflesService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private toast: ToastService,
+  ){}
 
   ngOnInit(){
+    const token = this.route.snapshot.queryParamMap.get('token')?.trim();
+    if (token) {
+      this.router.navigate(['/consultar-stickers'], {
+        queryParams: { token },
+        replaceUrl: true,
+      });
+      return;
+    }
+
     this.load();
   }
 
@@ -136,5 +153,17 @@ export class HomeComponent implements OnInit {
   scrollToListado(): void {
     const el = document.getElementById('catalogo');
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  consultarStickers(): void {
+    const email = this.stickerEmail.trim().toLowerCase();
+    if (!this.emailPattern.test(email)) {
+      this.toast.show('error', 'Correo no valido', 'Ingresa un correo con formato nombre@dominio.com.');
+      return;
+    }
+
+    this.router.navigate(['/consultar-stickers'], {
+      queryParams: { email }
+    });
   }
 }

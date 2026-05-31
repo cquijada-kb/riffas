@@ -21,6 +21,11 @@ export class UsersController {
     return this.usersService.getTraceabilitySummary();
   }
 
+  @Get('buyers/:email')
+  getBuyerDetail(@Param('email') email: string) {
+    return this.usersService.getBuyerDetail(email);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findById(id);

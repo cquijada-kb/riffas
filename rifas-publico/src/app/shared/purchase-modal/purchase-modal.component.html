@@ -11,6 +11,22 @@
     <div class="body" [formGroup]="form">
       <input class="input" placeholder="Tu nombre" formControlName="compradorNombre" />
       <input class="input" placeholder="Tu correo (para enviarte tus numeros)" formControlName="compradorEmail" />
+      <input class="input" placeholder="Telefono" formControlName="compradorTelefono" />
+      <input class="input" placeholder="RUT" formControlName="compradorRut" />
+      <input class="input" placeholder="Ciudad" formControlName="compradorCiudad" />
+
+      <div class="package-options" *ngIf="raffle.paquetes?.length">
+        <button
+          class="package-option"
+          type="button"
+          *ngFor="let option of raffle.paquetes; let i = index"
+          [class.active]="paqueteId.value === (i + '')"
+          (click)="selectPackage(i)"
+        >
+          <strong>{{ option.cantidad }}</strong>
+          <span>{{ option.precio | currency:'CLP':'symbol-narrow' }}</span>
+        </button>
+      </div>
 
       <div class="stepper">
         <button class="step" type="button" (click)="dec()">-</button>
@@ -48,8 +64,40 @@
         </div>
       </div>
 
+      <div class="payment-methods">
+        <button
+          type="button"
+          [class.active]="paymentMethod === 'flow'"
+          (click)="setPaymentMethod('flow')"
+        >
+          <strong>Pago online</strong>
+          <span>Redireccion a Flow</span>
+        </button>
+        <button
+          type="button"
+          [class.active]="paymentMethod === 'transferencia'"
+          (click)="setPaymentMethod('transferencia')"
+        >
+          <strong>Transferencia</strong>
+          <span>Subir comprobante</span>
+        </button>
+      </div>
+
+      <div class="transfer-box" *ngIf="paymentMethod === 'transferencia'">
+        <div>
+          <strong>Pago por transferencia</strong>
+          <span>Sube la foto o PDF del comprobante. Tus tickets quedaran por verificar.</span>
+        </div>
+        <input type="file" accept="image/*,application/pdf" (change)="selectComprobante($event)" />
+        <small *ngIf="comprobante">{{ comprobante.name }}</small>
+      </div>
+
       <button class="btn btn-primary w100" type="button" (click)="purchase()" [disabled]="loading || form.invalid">
-        {{ loading ? 'Redirigiendo a Flow...' : 'Comprar y pagar' }}
+        {{
+          loading
+            ? (paymentMethod === 'flow' ? 'Redirigiendo a Flow...' : 'Registrando transferencia...')
+            : (paymentMethod === 'flow' ? 'Comprar y pagar' : 'Enviar comprobante')
+        }}
       </button>
       <button class="btn btn-ghost w100" type="button" (click)="close()">Cancelar</button>
     </div>

@@ -79,6 +79,10 @@
             <span class="material-symbols-outlined">visibility</span>
             <span>Ver detalle</span>
           </button>
+          <button mat-menu-item (click)="verTickets(r)">
+            <span class="material-symbols-outlined">confirmation_number</span>
+            <span>Ver tickets</span>
+          </button>
           <button mat-menu-item *ngIf="canEdit(r)" (click)="editarRifa(r)">
             <span class="material-symbols-outlined">edit</span>
             <span>Editar</span>
@@ -134,9 +138,16 @@
       <div class="card-footer">
         <div class="meta-chip" [class.subtle]="isMetaSubtle(r)">{{ getMetaLabel(r) }}</div>
 
-        <button type="button" class="manage-button" (click)="verDetalle(r)">
-          {{ getActionLabel(r) }}
-        </button>
+        <div class="footer-actions">
+          <button type="button" class="manage-button tickets-button" (click)="verTickets(r)">
+            <span class="material-symbols-outlined">confirmation_number</span>
+            Ver tickets
+          </button>
+
+          <button type="button" class="manage-button" (click)="verDetalle(r)">
+            {{ getActionLabel(r) }}
+          </button>
+        </div>
       </div>
     </div>
   </article>

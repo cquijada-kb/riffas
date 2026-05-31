@@ -122,6 +122,9 @@ export class UsersService {
           id: email,
           nombre: name,
           email,
+          telefono: latestTicket?.compradorTelefono ?? '',
+          rut: latestTicket?.compradorRut ?? '',
+          ciudad: latestTicket?.compradorCiudad ?? '',
           ticketsComprados: metrics.tickets,
           rifasParticipadas: metrics.raffleIds.size,
           montoTotal,
@@ -186,6 +189,77 @@ export class UsersService {
       systemUsers,
       buyers,
       winners,
+    };
+  }
+
+  async getBuyerDetail(email: string) {
+    const normalizedEmail = decodeURIComponent(String(email ?? ''))
+      .toLowerCase()
+      .trim();
+
+    if (!normalizedEmail) {
+      throw new NotFoundException('Comprador no encontrado');
+    }
+
+    const [tickets, raffles, user] = await Promise.all([
+      this.ticketModel
+        .find({ compradorEmail: normalizedEmail, estado: { $ne: 'RECHAZADO' } })
+        .sort({ createdAt: -1 })
+        .lean()
+        .exec(),
+      this.raffleModel.find().lean().exec(),
+      this.userModel.findOne({ email: normalizedEmail }).lean().exec(),
+    ]);
+
+    if (!tickets.length && !user) {
+      throw new NotFoundException('Comprador no encontrado');
+    }
+
+    const raffleById = new Map(
+      (raffles as Array<any>).map((raffle) => [String(raffle._id), raffle]),
+    );
+
+    const latestTicket = (tickets as Array<any>)[0];
+    const items = (tickets as Array<any>).map((ticket) => {
+      const raffle = raffleById.get(String(ticket.raffleId));
+      return {
+        ticketId: String(ticket._id),
+        numero: Number(ticket.numero ?? 0),
+        estado: ticket.estado,
+        estadoLabel: this.getTicketStatusLabel(ticket.estado),
+        raffleId: String(ticket.raffleId),
+        raffleTitulo: raffle?.titulo ?? 'Sorteo sin titulo',
+        compradorNombre: ticket.compradorNombre ?? user?.nombre ?? 'Comprador sin nombre',
+        compradorEmail: ticket.compradorEmail ?? normalizedEmail,
+        compradorTelefono: ticket.compradorTelefono ?? '',
+        compradorRut: ticket.compradorRut ?? '',
+        compradorCiudad: ticket.compradorCiudad ?? '',
+        flowOrderId: ticket.flowOrderId ?? null,
+        referenciaPago: ticket.referenciaPago ?? null,
+        montoTotal:
+          Number(ticket.montoPagoTotal ?? 0) ||
+          Number(raffle?.precioTicket ?? 0),
+        createdAt: ticket.createdAt ?? null,
+        updatedAt: ticket.updatedAt ?? null,
+      };
+    });
+
+    const raffleIds = new Set(items.map((item) => item.raffleId));
+
+    return {
+      id: normalizedEmail,
+      nombre:
+        latestTicket?.compradorNombre ||
+        user?.nombre ||
+        'Comprador sin nombre',
+      email: normalizedEmail,
+      telefono: latestTicket?.compradorTelefono ?? '',
+      rut: latestTicket?.compradorRut ?? '',
+      ciudad: latestTicket?.compradorCiudad ?? '',
+      ticketsComprados: items.length,
+      rifasParticipadas: raffleIds.size,
+      montoTotal: items.reduce((total, item) => total + Number(item.montoTotal ?? 0), 0),
+      tickets: items,
     };
   }
 
@@ -422,6 +496,13 @@ export class UsersService {
 
     const diffDays = Math.floor(diffHours / 24);
     return `Hace ${diffDays} dias`;
+  }
+
+  private getTicketStatusLabel(status: string) {
+    if (status === 'PAGADO') return 'Pagado';
+    if (status === 'PENDIENTE' || status === 'RESERVADO') return 'Por verificar';
+    if (status === 'RECHAZADO') return 'Rechazado';
+    return 'Disponible';
   }
 
   private getDailyDeltaLabel(todayCount: number, yesterdayCount: number) {

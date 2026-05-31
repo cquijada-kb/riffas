@@ -13,6 +13,11 @@ import { Ticket, TicketDocument } from '../tickets/ticket.schema';
 import { S3Service } from '../storage/s3.service';
 import { MailService } from '../mail/mail.service';
 
+type RaffleUploadedFiles = {
+  imagenes?: Express.Multer.File[];
+  stickers?: Express.Multer.File[];
+};
+
 @Injectable()
 export class RafflesService {
   constructor(
@@ -98,34 +103,25 @@ export class RafflesService {
     return raffle;
   }
 
-  async create(dto: CreateRaffleDto, files?: Express.Multer.File[]) {
-    const imagenes: string[] = [];
-
-    if (files && files.length > 0) {
-      const limited = files.slice(0, 3);
-
-      for (const file of limited) {
-        const ext = this.getExt(file.mimetype);
-        const key = `raffles/${Date.now()}-${Math.random()}${ext}`;
-
-        const url = await this.s3Service.uploadImage(
-          file.buffer,
-          file.mimetype,
-          key,
-        );
-
-        imagenes.push(url);
-      }
-    }
+  async create(dto: CreateRaffleDto, files?: RaffleUploadedFiles) {
+    const imagenes = await this.uploadFiles(files?.imagenes, 'raffles', 3);
+    const stickers = await this.uploadFiles(files?.stickers, 'raffles/stickers', 10);
 
     const raffle = new this.raffleModel({
       titulo: dto.titulo,
+      subtitulo: dto.subtitulo,
       descripcion: dto.descripcion,
+      condiciones: dto.condiciones,
       precioTicket: dto.precioTicket,
       totalTickets: dto.totalTickets,
       limitePorUsuario: dto.limitePorUsuario,
       fechaCierre: dto.fechaCierre,
+      fechaInicioVenta: dto.fechaInicioVenta,
+      fechaTerminoVenta: dto.fechaTerminoVenta,
+      fechaSorteo: dto.fechaSorteo,
+      paquetes: this.normalizePackages(dto.paquetes, dto.precioTicket),
       imagenes,
+      stickers,
       estado: 'ACTIVA',
       ticketsVendidos: 0,
     });
@@ -137,13 +133,15 @@ export class RafflesService {
   async update(
     id: string,
     dto: UpdateRaffleDto,
-    files?: Express.Multer.File[],
+    files?: RaffleUploadedFiles,
   ): Promise<RaffleDocument> {
     const raffle = await this.raffleModel.findById(id).exec();
     if (!raffle) throw new NotFoundException('Rifa no encontrada');
 
     if (dto.titulo !== undefined) raffle.titulo = dto.titulo;
+    if (dto.subtitulo !== undefined) raffle.subtitulo = dto.subtitulo;
     if (dto.descripcion !== undefined) raffle.descripcion = dto.descripcion;
+    if (dto.condiciones !== undefined) raffle.condiciones = dto.condiciones;
     if (dto.precioTicket !== undefined) raffle.precioTicket = dto.precioTicket;
     if (dto.totalTickets !== undefined) raffle.totalTickets = dto.totalTickets;
     if (dto.limitePorUsuario !== undefined) {
@@ -154,23 +152,43 @@ export class RafflesService {
       raffle.fechaCierre = dto.fechaCierre ? new Date(dto.fechaCierre) : null;
     }
 
-    if (files && files.length > 0) {
-      const nuevasImagenes: string[] = [];
+    if (dto.fechaInicioVenta !== undefined) {
+      raffle.fechaInicioVenta = dto.fechaInicioVenta
+        ? new Date(dto.fechaInicioVenta)
+        : null;
+    }
 
-      for (const file of files.slice(0, 3)) {
-        const ext = this.getExt(file.mimetype);
-        const key = `raffles/${id}/${Date.now()}-${Math.random()}${ext}`;
+    if (dto.fechaTerminoVenta !== undefined) {
+      raffle.fechaTerminoVenta = dto.fechaTerminoVenta
+        ? new Date(dto.fechaTerminoVenta)
+        : null;
+    }
 
-        const url = await this.s3Service.uploadImage(
-          file.buffer,
-          file.mimetype,
-          key,
-        );
+    if (dto.fechaSorteo !== undefined) {
+      raffle.fechaSorteo = dto.fechaSorteo ? new Date(dto.fechaSorteo) : null;
+    }
 
-        nuevasImagenes.push(url);
-      }
+    if (dto.paquetes !== undefined) {
+      raffle.paquetes = this.normalizePackages(
+        dto.paquetes,
+        dto.precioTicket ?? raffle.precioTicket,
+      );
+    }
 
-      raffle.imagenes = nuevasImagenes;
+    if (files?.imagenes && files.imagenes.length > 0) {
+      raffle.imagenes = await this.uploadFiles(
+        files.imagenes,
+        `raffles/${id}`,
+        3,
+      );
+    }
+
+    if (files?.stickers && files.stickers.length > 0) {
+      raffle.stickers = await this.uploadFiles(
+        files.stickers,
+        `raffles/${id}/stickers`,
+        10,
+      );
     }
 
     await raffle.save();
@@ -222,7 +240,50 @@ export class RafflesService {
     if (mime === 'image/jpeg') return '.jpg';
     if (mime === 'image/jpg') return '.jpg';
     if (mime === 'image/webp') return '.webp';
+    if (mime === 'application/pdf') return '.pdf';
     return '';
+  }
+
+  private async uploadFiles(
+    files: Express.Multer.File[] | undefined,
+    basePath: string,
+    limit: number,
+  ) {
+    const urls: string[] = [];
+
+    for (const file of (files ?? []).slice(0, limit)) {
+      const ext = this.getExt(file.mimetype);
+      const key = `${basePath}/${Date.now()}-${Math.random()}${ext}`;
+      const url = await this.s3Service.uploadImage(
+        file.buffer,
+        file.mimetype,
+        key,
+      );
+      urls.push(url);
+    }
+
+    return urls;
+  }
+
+  private normalizePackages(
+    packages: any[] | undefined,
+    defaultPrice: number,
+  ) {
+    const normalized = (packages ?? [])
+      .map((item) => ({
+        cantidad: Number(item?.cantidad ?? 0),
+        precio: Number(item?.precio ?? 0),
+        etiqueta: item?.etiqueta ? String(item.etiqueta) : '',
+      }))
+      .filter((item) => item.cantidad > 0 && item.precio >= 0);
+
+    if (normalized.length > 0) {
+      return normalized;
+    }
+
+    return defaultPrice > 0
+      ? [{ cantidad: 1, precio: Number(defaultPrice), etiqueta: '1 ticket' }]
+      : [];
   }
 
   private getStartOfToday(): Date {

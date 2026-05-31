@@ -37,7 +37,16 @@
             Ganadores
           </button>
         </div>
+        <input
+          class="payment-search"
+          type="search"
+          placeholder="Buscar por nombre, correo, telefono o ticket"
+          [(ngModel)]="userSearch"
+        />
         <span>Mostrando {{ getUserViewCount() }} registros</span>
+        <button type="button" class="detail-button" (click)="exportUsersReport()">
+          Exportar XLS
+        </button>
       </div>
 
       <div class="table-wrap" *ngIf="selectedUserView === 'sistema'">
@@ -49,10 +58,11 @@
               <th>Estado</th>
               <th>Rol</th>
               <th>Ultima actividad</th>
+              <th>Accion</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of systemUsers">
+            <tr *ngFor="let user of filteredSystemUsers">
               <td>
                 <div class="user-cell">
                   <div class="avatar"></div>
@@ -76,6 +86,9 @@
                 <strong>{{ getRelativeLabel(user.updatedAt) }}</strong>
                 <span>{{ user.rol === 'ADMIN' ? 'Acceso al panel' : 'Cuenta cliente' }}</span>
               </td>
+              <td>
+                <button type="button" class="detail-button" (click)="viewSystemUserDetail(user)">Ver detalle</button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -90,10 +103,11 @@
               <th>Monto total</th>
               <th>Estado</th>
               <th>Ultima compra</th>
+              <th>Accion</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let buyer of buyers">
+            <tr *ngFor="let buyer of filteredBuyers">
               <td>
                 <div class="user-cell">
                   <div class="avatar"></div>
@@ -117,6 +131,9 @@
                 <strong>{{ getRelativeLabel(buyer.updatedAt) }}</strong>
                 <span>{{ formatDate(buyer.updatedAt) }}</span>
               </td>
+              <td>
+                <button type="button" class="detail-button" (click)="viewBuyerDetail(buyer)">Ver detalle</button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -134,7 +151,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let winner of winners">
+            <tr *ngFor="let winner of filteredWinners">
               <td>
                 <div class="user-cell">
                   <div class="avatar"></div>
@@ -165,6 +182,95 @@
           </tbody>
         </table>
       </div>
+
+      <section class="payment-detail-card" *ngIf="selectedBuyer || selectedSystemUser || buyerDetailLoading">
+        <div class="detail-head">
+          <div>
+            <p>VER DETALLE</p>
+            <h3 *ngIf="selectedBuyer">{{ selectedBuyer.nombre }}</h3>
+            <h3 *ngIf="selectedSystemUser">{{ selectedSystemUser.nombre }}</h3>
+            <h3 *ngIf="buyerDetailLoading">Cargando comprador</h3>
+          </div>
+          <button type="button" (click)="closeBuyerDetail()">Cerrar</button>
+        </div>
+
+        <ng-container *ngIf="selectedSystemUser as user">
+          <div class="detail-grid">
+            <article>
+              <span>Contacto</span>
+              <strong>{{ user.email }}</strong>
+              <small>ID: {{ user.id }}</small>
+            </article>
+            <article>
+              <span>Rol</span>
+              <strong>{{ getSystemUserRoleLabel(user.rol) }}</strong>
+              <small>{{ user.rol === 'ADMIN' ? 'Acceso administrativo' : 'Cuenta cliente' }}</small>
+            </article>
+            <article>
+              <span>Estado</span>
+              <strong>{{ user.estado }}</strong>
+              <small>Registro: {{ formatDate(user.createdAt) }}</small>
+            </article>
+            <article>
+              <span>Ultima actividad</span>
+              <strong>{{ getRelativeLabel(user.updatedAt) }}</strong>
+              <small>{{ formatDate(user.updatedAt) }}</small>
+            </article>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="selectedBuyer as buyer">
+          <div class="detail-grid">
+            <article>
+              <span>Contacto</span>
+              <strong>{{ buyer.email }}</strong>
+              <small *ngIf="buyer.telefono">Tel: {{ buyer.telefono }}</small>
+              <small *ngIf="buyer.rut">RUT: {{ buyer.rut }}</small>
+            </article>
+            <article>
+              <span>Tickets</span>
+              <strong>{{ formatCount(buyer.ticketsComprados) }}</strong>
+              <small>{{ formatCount(buyer.rifasParticipadas) }} rifas participadas</small>
+            </article>
+            <article>
+              <span>Monto total</span>
+              <strong>{{ formatCurrency(buyer.montoTotal) }}</strong>
+              <small>Compras vinculadas al correo</small>
+            </article>
+          </div>
+
+          <div class="table-wrap detail-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticket</th>
+                  <th>Sorteo</th>
+                  <th>Estado</th>
+                  <th>Monto</th>
+                  <th>Referencia</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let ticket of buyer.tickets">
+                  <td><strong>#{{ ticket.numero }}</strong></td>
+                  <td>
+                    <strong>{{ ticket.raffleTitulo }}</strong>
+                    <span>ID: {{ ticket.raffleId.slice(-8).toUpperCase() }}</span>
+                  </td>
+                  <td><span class="pill" [class]="getStatusClass(ticket.estadoLabel)">{{ ticket.estadoLabel }}</span></td>
+                  <td><strong>{{ formatCurrency(ticket.montoTotal) }}</strong></td>
+                  <td>{{ ticket.referenciaPago || ticket.flowOrderId || 'Sin referencia' }}</td>
+                  <td>{{ formatDate(ticket.createdAt) }}</td>
+                </tr>
+                <tr *ngIf="!buyer.tickets.length">
+                  <td colspan="6">Este usuario no tiene tickets comprados.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </section>
 
       <div class="users-pagination">
         <button type="button">Anterior</button>
@@ -211,6 +317,12 @@
         <div class="payments-toolbar">
           <h3>Historial de Transacciones</h3>
         <div class="payments-filters">
+          <input
+            class="payment-search"
+            type="search"
+            placeholder="Nombre, correo, sorteo o ticket"
+            [(ngModel)]="paymentSearch"
+          />
           <div class="filter-pills">
             <button type="button" [class.active]="selectedPaymentFilter === 'all'" (click)="setPaymentFilter('all')">Todos</button>
             <button type="button" [class.active]="selectedPaymentFilter === 'success'" (click)="setPaymentFilter('success')">Exito</button>
@@ -231,6 +343,7 @@
               <th>Monto</th>
               <th>Metodo</th>
               <th>Estado</th>
+              <th>Accion</th>
             </tr>
           </thead>
           <tbody>
@@ -259,9 +372,12 @@
                 <td>
                   <span class="pill" [class]="getStatusClass(payment.status)">{{ payment.status }}</span>
                 </td>
+                <td>
+                  <button type="button" class="detail-button" (click)="viewPaymentDetail(payment)">Ver detalle</button>
+                </td>
               </tr>
               <tr *ngIf="!paginatedPayments.length">
-                <td colspan="5">
+                <td colspan="6">
                   <strong>No hay transacciones para este filtro.</strong>
                   <span>Ajusta el estado para revisar otros movimientos.</span>
                 </td>
@@ -279,6 +395,74 @@
         </div>
       </section>
 
+      <section class="payment-detail-card" *ngIf="selectedPayment || paymentDetailLoading">
+        <div class="detail-head">
+          <div>
+            <p>VER DETALLE</p>
+            <h3 *ngIf="selectedPayment">Pago #{{ selectedPayment.id }}</h3>
+            <h3 *ngIf="paymentDetailLoading">Cargando detalle</h3>
+          </div>
+          <button type="button" (click)="closePaymentDetail()">Cerrar</button>
+        </div>
+
+        <ng-container *ngIf="selectedPayment as detail">
+          <div class="detail-grid">
+            <article>
+              <span>Comprador</span>
+              <strong>{{ detail.compradorNombre }}</strong>
+              <small>{{ detail.compradorEmail }}</small>
+              <small *ngIf="detail.compradorTelefono">Tel: {{ detail.compradorTelefono }}</small>
+              <small *ngIf="detail.compradorRut">RUT: {{ detail.compradorRut }}</small>
+            </article>
+            <article>
+              <span>Sorteo</span>
+              <strong>{{ detail.raffleTitulo }}</strong>
+              <small>ID sorteo: {{ detail.raffleId }}</small>
+              <small>Tickets: {{ detail.numeros.join(', ') }}</small>
+            </article>
+            <article>
+              <span>Monto total</span>
+              <strong>{{ formatCurrency(detail.montoTotal) }}</strong>
+              <small>{{ detail.cantidadTickets }} tickets comprados</small>
+            </article>
+            <article>
+              <span>Estado</span>
+              <strong>{{ detail.estado }}</strong>
+              <small>Metodo: {{ detail.metodo }}</small>
+              <small>Referencia: {{ detail.referenciaPago || 'Sin referencia' }}</small>
+            </article>
+          </div>
+
+          <div class="receipt-box">
+            <div>
+              <span>Comprobante</span>
+              <strong>{{ detail.comprobanteUrl ? 'Adjunto disponible' : 'No hay imagen adjunta' }}</strong>
+              <small *ngIf="selectedReceiptFile">{{ selectedReceiptFile.name }}</small>
+            </div>
+            <a *ngIf="detail.comprobanteUrl" [href]="detail.comprobanteUrl" target="_blank" rel="noreferrer">Ver comprobante</a>
+          </div>
+
+          <div class="manual-actions receipt-upload">
+            <input type="file" accept="image/*,application/pdf" (change)="selectReceiptFile($event)" />
+            <button
+              type="button"
+              class="confirm"
+              (click)="uploadSelectedReceipt()"
+              [disabled]="!selectedReceiptFile || receiptUploading"
+            >
+              {{ receiptUploading ? 'Subiendo...' : 'Subir comprobante' }}
+            </button>
+          </div>
+
+          <div class="manual-actions" *ngIf="detail.estado !== 'Completado'">
+            <input type="text" placeholder="Referencia de pago" [(ngModel)]="paymentReference" />
+            <input type="url" placeholder="URL del comprobante" [(ngModel)]="paymentReceiptUrl" />
+            <button type="button" class="confirm" (click)="confirmSelectedPayment()">Confirmar pago</button>
+            <button type="button" class="reject" (click)="rejectSelectedPayment()">Rechazar</button>
+          </div>
+        </ng-container>
+      </section>
+
       <section class="payments-bottom">
         <article class="report-card">
           <div>
@@ -294,7 +478,7 @@
           <div class="report-badge">
             <span class="material-symbols-outlined">verified_user</span>
             <div>
-              <small>Seguridad Ledger</small>
+              <small>Seguridad RIFFAS</small>
               <strong>100% Cifrado</strong>
             </div>
           </div>
@@ -315,7 +499,7 @@
         <h2>Trazabilidad y log</h2>
         <p>
           Control total sobre cada accion realizada en el sistema. Integridad de datos y auditoria
-          en tiempo real para la Ledger Soberana.
+          en tiempo real para RIFFAS.
         </p>
       </div>
       <div class="sync-badge">

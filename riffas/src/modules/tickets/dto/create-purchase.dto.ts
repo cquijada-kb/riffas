@@ -1,4 +1,11 @@
-import { IsEmail, IsInt, IsNotEmpty, IsPositive, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 
 export class CreatePurchaseDto {
   @IsString()
@@ -8,7 +15,23 @@ export class CreatePurchaseDto {
   @IsEmail()
   compradorEmail: string;
 
+  @IsString()
+  @IsOptional()
+  compradorTelefono?: string;
+
+  @IsString()
+  @IsOptional()
+  compradorRut?: string;
+
+  @IsString()
+  @IsOptional()
+  compradorCiudad?: string;
+
   @IsInt()
   @IsPositive()
   cantidad: number;
+
+  @IsString()
+  @IsOptional()
+  paqueteId?: string;
 }

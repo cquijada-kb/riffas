@@ -27,6 +27,9 @@ export interface AdminBuyerItem {
   id: string;
   nombre: string;
   email: string;
+  telefono?: string;
+  rut?: string;
+  ciudad?: string;
   ticketsComprados: number;
   rifasParticipadas: number;
   montoTotal: number;
@@ -44,6 +47,38 @@ export interface AdminWinnerItem {
   numero: number;
   fechaSorteo?: string | null;
   codigoVerificacion?: string | null;
+}
+
+export interface AdminBuyerTicket {
+  ticketId: string;
+  numero: number;
+  estado: string;
+  estadoLabel: string;
+  raffleId: string;
+  raffleTitulo: string;
+  compradorNombre: string;
+  compradorEmail: string;
+  compradorTelefono?: string;
+  compradorRut?: string;
+  compradorCiudad?: string;
+  flowOrderId?: string | null;
+  referenciaPago?: string | null;
+  montoTotal: number;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface AdminBuyerDetail {
+  id: string;
+  nombre: string;
+  email: string;
+  telefono?: string;
+  rut?: string;
+  ciudad?: string;
+  ticketsComprados: number;
+  rifasParticipadas: number;
+  montoTotal: number;
+  tickets: AdminBuyerTicket[];
 }
 
 export interface AdminUsersResponse {
@@ -64,5 +99,9 @@ export class AdminUsersService {
 
   getUsers(): Observable<AdminUsersResponse> {
     return this.http.get<AdminUsersResponse>(this.baseUrl);
+  }
+
+  getBuyerDetail(email: string): Observable<AdminBuyerDetail> {
+    return this.http.get<AdminBuyerDetail>(`${this.baseUrl}/buyers/${encodeURIComponent(email)}`);
   }
 }

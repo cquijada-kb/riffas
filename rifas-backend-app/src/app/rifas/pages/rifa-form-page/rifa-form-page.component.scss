@@ -110,6 +110,13 @@
   }
 }
 
+.panel-head.split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .field-stack {
   display: grid;
   gap: 16px;
@@ -119,6 +126,18 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.packages-list {
+  display: grid;
+  gap: 12px;
+}
+
+.package-row {
+  display: grid;
+  grid-template-columns: minmax(110px, .7fr) minmax(140px, .9fr) minmax(160px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
 }
 
 .full-width {
@@ -172,6 +191,40 @@
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 14px;
   margin-bottom: 16px;
+}
+
+.file-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.file-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(196, 198, 205, 0.45);
+  border-radius: 12px;
+  background: #fff;
+  color: #041627;
+  text-decoration: none;
+
+  strong {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  button {
+    border: 0;
+    background: transparent;
+    color: #74777d;
+    cursor: pointer;
+  }
 }
 
 .preview {
@@ -306,7 +359,8 @@
 
 @media (max-width: 760px) {
   .hero-card,
-  .form-row {
+  .form-row,
+  .package-row {
     grid-template-columns: 1fr;
     flex-direction: column;
   }

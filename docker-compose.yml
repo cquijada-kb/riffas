@@ -17,7 +17,7 @@ services:
     depends_on:
       - mongo
     env_file:
-      - ./riffas/.env
+      - ./.env
     environment:
       MONGO_URI: mongodb://mongo:27017/rifas_db
       PORT: 3000
